@@ -143,7 +143,7 @@
     background: var(--ink);
     color: var(--cream);
     border-radius: 28px;
-    padding: 52px 48px;
+    padding: 36px 44px;
     position: relative;
     overflow: hidden;
     margin-top: 8px;
@@ -181,17 +181,17 @@
   }
   .hero h1 {
     font-family: 'Fraunces', Georgia, serif;
-    font-weight: 900; font-size: clamp(28px, 4.6vw, 46px);
+    font-weight: 900; font-size: clamp(26px, 4vw, 38px);
     line-height: 1.08; letter-spacing: -0.02em; color: var(--cream);
   }
   .hero .sub {
     font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.04em;
-    color: var(--mist); margin-top: 18px;
+    color: var(--mist); margin-top: 12px;
   }
   .hero .sub b { color: var(--leaf); font-weight: 500; }
   .hero-meta {
     display: flex; gap: 36px; flex-wrap: wrap;
-    margin-top: 30px; padding-top: 26px;
+    margin-top: 20px; padding-top: 18px;
     border-top: 1px solid rgba(196,212,186,0.16);
   }
   .hm-item .lbl {
@@ -205,10 +205,10 @@
   .hm-item .val small { font-size: 12px; color: var(--mist); font-weight: 400; font-family: 'DM Mono', monospace; }
 
   /* ── SECTION SCAFFOLD ── */
-  section { margin-top: 56px; }
+  section { margin-top: 36px; }
   .sec-head {
     display: flex; align-items: baseline; justify-content: space-between;
-    gap: 16px; margin-bottom: 22px; flex-wrap: wrap;
+    gap: 16px; margin-bottom: 14px; flex-wrap: wrap;
   }
   .sec-head h2 {
     font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 900;
@@ -228,6 +228,26 @@
   .routedots .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--lime), transparent); }
 
   /* ── SERVICE GROUPS ── */
+  /* The service board breaks out of the reading column and fills the
+     screen as a responsive grid — 3 across on a 1080p desktop, auto
+     collapsing down. Hero, legend, timeline and subscribe stay at
+     reading width on purpose. */
+  .board {
+    width: min(1320px, calc(100vw - 48px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  #groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 18px;
+    align-items: start;
+    margin-top: 18px;
+  }
+  #groups .group { margin-bottom: 0; }
+  @media (max-width: 720px) {
+    .board { width: 100%; margin-left: 0; transform: none; }
+  }
   .group {
     background: #fff;
     border: 1px solid var(--parch);
@@ -256,7 +276,7 @@
 
   .svc {
     display: flex; align-items: center; gap: 18px;
-    padding: 18px 26px;
+    padding: 13px 24px;
     border-bottom: 1px solid #F4EFE2;
   }
   .svc:last-child { border-bottom: none; }
@@ -280,14 +300,14 @@
 
   /* ── UPTIME STRIP ── */
   .uptime {
-    padding: 6px 26px 20px;
+    padding: 3px 24px 13px;
     border-bottom: 1px solid #F4EFE2;
   }
   .svc + .uptime { margin-top: -6px; }
   .uptime:last-child { border-bottom: none; }
-  .bars { display: flex; gap: 3px; align-items: flex-end; height: 34px; }
+  .bars { display: flex; gap: 2px; align-items: flex-end; height: 28px; }
   .bars .b {
-    flex: 1; height: 100%; border-radius: 3px; min-width: 2px;
+    flex: 1; height: 100%; border-radius: 3px; min-width: 1px;
     background: var(--mist); transition: transform .15s, filter .15s;
     cursor: default; position: relative;
   }
@@ -303,7 +323,7 @@
   .uptime-foot {
     display: flex; justify-content: space-between;
     font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--stone);
-    margin-top: 9px; letter-spacing: 0.03em;
+    margin-top: 7px; letter-spacing: 0.03em;
   }
 
   /* ── LEGEND ── */
@@ -320,7 +340,7 @@
 
   /* ── TIMELINE / INCIDENTS ── */
   .timeline { border-left: 2px solid var(--parch); margin-left: 6px; }
-  .tl-item { position: relative; padding: 0 0 30px 30px; }
+  .tl-item { position: relative; padding: 0 0 20px 30px; }
   .tl-item:last-child { padding-bottom: 4px; }
   .tl-item::before {
     content: ""; position: absolute; left: -7px; top: 4px;
@@ -345,7 +365,7 @@
     padding: 3px 9px; border-radius: 999px; margin-left: 10px; vertical-align: middle;
   }
   .empty-state {
-    text-align: center; padding: 44px 24px;
+    text-align: center; padding: 28px 24px;
     background: #FBF6E9; border: 1px dashed #DCD0B4; border-radius: 18px;
   }
   .empty-state .es-mark { font-size: 30px; }
@@ -361,7 +381,7 @@
   /* ── SUBSCRIBE ── */
   .subscribe {
     background: var(--grove); color: var(--cream);
-    border-radius: 24px; padding: 44px 44px;
+    border-radius: 24px; padding: 32px 40px;
     position: relative; overflow: hidden;
   }
   .subscribe::before {
@@ -399,9 +419,9 @@
   .sub-note.err { color: var(--straw); }
 
   /* ── FOOTER ── */
-  footer { margin-top: 70px; border-top: 1px solid var(--parch); }
+  footer { margin-top: 44px; border-top: 1px solid var(--parch); }
   .foot-grid {
-    max-width: 920px; margin: 0 auto; padding: 44px 24px 12px;
+    max-width: 920px; margin: 0 auto; padding: 32px 24px 12px;
     display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap;
   }
   .foot-brand { max-width: 320px; }
@@ -595,13 +615,15 @@
   </section>
 
   <!-- ════════════ SERVICE GROUPS ════════════ -->
-  <section>
-    <div class="sec-head">
-      <h2>Current status by service</h2>
-      <span class="note" id="grpNote"></span>
+  <section class="svc-section">
+    <div class="board">
+      <div class="sec-head">
+        <h2>Current status by service</h2>
+        <span class="note" id="grpNote"></span>
+      </div>
+      <div class="routedots"><i></i><i></i><i></i><span class="line"></span></div>
+      <div id="groups"></div>
     </div>
-    <div class="routedots"><i></i><i></i><i></i><span class="line"></span></div>
-    <div id="groups" style="margin-top:22px;"></div>
   </section>
 
   <!-- ════════════ SCHEDULED MAINTENANCE ════════════ -->
@@ -820,6 +842,13 @@ const STATUS = {
       title: "Site navigation streamlined",
       pill: "Update",
       body: "Navigation and footers were unified across the public site and all info pages. The logo now links home from every page, the wordmark casing was corrected, and this service status page is now linked site-wide. No service disruption — content and forms unaffected."
+    },
+    {
+      type: "milestone",
+      date: "16 May 2026",
+      title: "Live reachability monitoring enabled",
+      pill: "Milestone",
+      body: "paddockroute.online is live and serving. Automated in-browser reachability checks are now running for the public website and this status site — re-probed every 60 seconds with a two-strike threshold before any alert."
     },
     {
       type: "milestone",
