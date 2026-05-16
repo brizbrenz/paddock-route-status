@@ -42,6 +42,8 @@
     --amber:  #C0871F;
     --slate:  #5B7A8C;
     --bg:     #F0E8D0;
+    --soft-tx:#4A4639;   /* body paragraph text (themable) */
+    --bar-pre:var(--mist); /* uptime bar: not-yet-monitored (themable) */
 
     /* Status semantic tokens */
     --s-op:    var(--lime);
@@ -339,7 +341,7 @@
     font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 16px;
     color: var(--ink); margin: 5px 0 6px;
   }
-  .tl-body { font-size: 13.5px; color: #4A4639; max-width: 60ch; }
+  .tl-body { font-size: 13.5px; color: var(--soft-tx); max-width: 60ch; }
   .tl-pill {
     display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
     letter-spacing: 0.08em; text-transform: uppercase;
@@ -418,7 +420,7 @@
     text-transform: uppercase; color: var(--field); margin-bottom: 14px;
   }
   .foot-col a, .foot-col span {
-    display: block; font-size: 13.5px; color: #4A4639; text-decoration: none;
+    display: block; font-size: 13.5px; color: var(--soft-tx); text-decoration: none;
     margin-bottom: 9px; transition: color .2s;
   }
   .foot-col a:hover { color: var(--field); }
@@ -441,7 +443,141 @@
     header { padding: 20px 20px; }
     .foot-bar { flex-direction: column; }
   }
+
+  /* ── THEME TOGGLE SWITCH ───────────────────────────────────────────── */
+  .theme-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; border: 1px solid rgba(78,122,53,0.28);
+    border-radius: 999px; padding: 7px 12px; cursor: pointer;
+    color: var(--field); transition: border-color .25s, background .25s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-toggle:hover { border-color: rgba(78,122,53,0.55); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+  .tg-ico { width: 15px; height: 15px; flex-shrink: 0; transition: color .25s, opacity .25s; }
+  .tg-sun  { color: var(--straw); }
+  .tg-moon { color: var(--field); opacity: .45; }
+  .tg-track {
+    position: relative; width: 38px; height: 20px; border-radius: 999px;
+    background: var(--parch); border: 1px solid rgba(15,26,10,0.10);
+    transition: background .3s ease;
+  }
+  .tg-knob {
+    position: absolute; top: 1px; left: 1px; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--cream);
+    box-shadow: 0 2px 5px rgba(15,26,10,0.30);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .3s;
+  }
+  [data-theme="dark"] .theme-toggle { border-color: rgba(168,217,106,0.28); }
+  [data-theme="dark"] .theme-toggle:hover { border-color: rgba(168,217,106,0.55); }
+  [data-theme="dark"] .tg-track { background: var(--grove); border-color: rgba(168,217,106,0.20); }
+  [data-theme="dark"] .tg-knob  { transform: translateX(18px); background: var(--leaf); }
+  [data-theme="dark"] .tg-sun   { opacity: .4; color: var(--straw); }
+  [data-theme="dark"] .tg-moon  { opacity: 1; color: var(--leaf); }
+
+  /* ── DARK THEME ────────────────────────────────────────────────────────
+     Forest-night palette built from the brand. Only surface + text tokens
+     and a few specific components flip; the brand accent colours and the
+     (always-dark) hero are unchanged. Status text tokens are var()-based
+     so every inline-coloured status label/badge re-tints automatically. */
+  [data-theme="dark"] {
+    --soft-tx:   #B2C09F;
+    --bar-pre:   #38472C;                  /* recessed, clearly "not monitored" */
+    --parch:     rgba(168,217,106,0.12);   /* hairlines / dividers */
+    --s-op-tx:   #A8D96A;
+    --s-deg-tx:  #E6C878;
+    --s-part-tx: #E6A24A;
+    --s-major-tx:#E58A5A;
+    --s-maint-tx:#8FB6C9;
+    --s-pre-tx:  #9DAB8C;
+  }
+  [data-theme="dark"] body {
+    background: #0B1308; color: #EAF0DD;
+    background-image:
+      radial-gradient(circle at 12% 16%, rgba(141,189,90,0.08), transparent 44%),
+      radial-gradient(circle at 88% 6%, rgba(212,185,106,0.06), transparent 42%);
+  }
+  [data-theme="dark"] ::selection { background: var(--field); color: var(--cream); }
+
+  [data-theme="dark"] .hero {
+    border: 1px solid rgba(168,217,106,0.13);
+    box-shadow: 0 30px 70px -34px rgba(0,0,0,0.7);
+  }
+  [data-theme="dark"] .ghost-link { color: var(--leaf); border-color: rgba(168,217,106,0.30); }
+  [data-theme="dark"] .ghost-link:hover { background: var(--lime); color: var(--ink); border-color: var(--lime); }
+
+  [data-theme="dark"] .brand .pad,
+  [data-theme="dark"] .foot-brand .ft .pad { color: #EAF0DD; }
+  [data-theme="dark"] .brand .rte,
+  [data-theme="dark"] .foot-brand .ft .rte { color: var(--leaf); }
+  [data-theme="dark"] .brand .statustag { color: #8C9A7C; }
+
+  [data-theme="dark"] .kicker,
+  [data-theme="dark"] .foot-col .fh { color: var(--lime); }
+
+  [data-theme="dark"] .group {
+    background: #15210D; border-color: rgba(168,217,106,0.10);
+    box-shadow: 0 18px 40px -34px rgba(0,0,0,0.6);
+  }
+  [data-theme="dark"] .group-head {
+    background: linear-gradient(180deg, #1C2A12, #15210D);
+    border-bottom-color: rgba(168,217,106,0.10);
+  }
+  [data-theme="dark"] .group-head .gt { color: var(--leaf); }
+
+  [data-theme="dark"] .svc { border-bottom-color: rgba(168,217,106,0.07); }
+  [data-theme="dark"] .svc .name { color: #EAF0DD; }
+  [data-theme="dark"] .svc .desc { color: #93A283; }
+  [data-theme="dark"] .svc .name .tagchip { border-color: rgba(168,217,106,0.22); color: #93A283; }
+  [data-theme="dark"] .uptime { border-bottom-color: rgba(168,217,106,0.07); }
+
+  [data-theme="dark"] .live-chip { border-color: rgba(168,217,106,0.20); color: #93A283; }
+  [data-theme="dark"] .live-chip.ok   { color: var(--leaf);  border-color: rgba(141,189,90,0.45); background: rgba(141,189,90,0.14); }
+  [data-theme="dark"] .live-chip.fail { color: #E6A24A; border-color: rgba(216,154,62,0.5); background: rgba(216,154,62,0.16); }
+
+  [data-theme="dark"] .legend { background: #15210D; border-color: rgba(168,217,106,0.10); }
+  [data-theme="dark"] .legend .li { color: #C2D0B1; }
+
+  [data-theme="dark"] .sec-head h2 { color: #EAF0DD; }
+  [data-theme="dark"] .sec-head .note { color: #8C9A7C; }
+
+  [data-theme="dark"] .timeline { border-left-color: rgba(168,217,106,0.16); }
+  [data-theme="dark"] .tl-item::before { background: #0B1308; }
+  [data-theme="dark"] .tl-date { color: #8C9A7C; }
+  [data-theme="dark"] .tl-title { color: #EAF0DD; }
+
+  [data-theme="dark"] .empty-state {
+    background: #15210D; border-color: rgba(168,217,106,0.20);
+  }
+  [data-theme="dark"] .empty-state p { color: var(--leaf); }
+  [data-theme="dark"] .empty-state span { color: #8C9A7C; }
+
+  [data-theme="dark"] .subscribe { box-shadow: inset 0 0 0 1px rgba(168,217,106,0.10); }
+
+  [data-theme="dark"] footer { border-top-color: rgba(168,217,106,0.10); }
+  [data-theme="dark"] .foot-brand p { color: #8C9A7C; }
+  [data-theme="dark"] .foot-col a:hover { color: var(--leaf); }
+  [data-theme="dark"] .foot-bar { border-top-color: rgba(168,217,106,0.10); color: #8C9A7C; }
+
+  /* honour OS dark preference for first-time visitors before JS runs is
+     handled by the inline <head> script; this block only styles the
+     resolved [data-theme="dark"] state. */
 </style>
+<script>
+  /* Set theme before first paint to avoid a flash. Preference order:
+     saved choice → OS setting → light. localStorage is wrapped in
+     try/catch so a storage-blocked context can never throw. */
+  (function(){
+    var t = null;
+    try { t = localStorage.getItem("pr-status-theme"); } catch(e){}
+    if (t !== "dark" && t !== "light"){
+      t = (window.matchMedia &&
+           window.matchMedia("(prefers-color-scheme: dark)").matches)
+          ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
 </head>
 <body>
 
@@ -477,6 +613,23 @@
     </span>
   </a>
   <div class="header-actions">
+    <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false"
+            aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="tg-ico tg-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 2.5v2.6"/><path d="M12 18.9v2.6"/>
+          <path d="M2.5 12h2.6"/><path d="M18.9 12h2.6"/>
+          <path d="M5.2 5.2l1.8 1.8"/><path d="M17 17l1.8 1.8"/>
+          <path d="M18.8 5.2L17 7"/><path d="M7 17l-1.8 1.8"/>
+        </g>
+      </svg>
+      <span class="tg-track"><span class="tg-knob"></span></span>
+      <svg class="tg-ico tg-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"
+              fill="currentColor"/>
+      </svg>
+    </button>
     <a class="ghost-link" href="https://paddockroute.com.au/">← Back to site</a>
   </div>
 </header>
@@ -815,8 +968,8 @@ function uptimeDays(svc){
   return days;
 }
 function dayColor(st){
-  if (st === "pre") return "var(--mist)";
-  return STATE_META[st] ? STATE_META[st].color : "var(--mist)";
+  if (st === "pre") return "var(--bar-pre)";
+  return STATE_META[st] ? STATE_META[st].color : "var(--bar-pre)";
 }
 function uptimePct(svc){
   if (!STATE_META[svc.state].live) return null;
@@ -1018,7 +1171,7 @@ paintBanner();
       </div>
       <div class="svc" style="display:block;">
         <div class="mono" style="font-size:12px;color:var(--field);letter-spacing:0.05em;">${mn.window}</div>
-        <div style="font-size:13.5px;color:#4A4639;margin-top:8px;">${mn.body}</div>
+        <div style="font-size:13.5px;color:var(--soft-tx);margin-top:8px;">${mn.body}</div>
       </div>
     </div>`).join("");
 })();
@@ -1221,6 +1374,41 @@ paintBanner();
 
   btn.addEventListener("click", go);
   inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+})();
+
+/* ── Theme toggle controller ───────────────────────────────────────────
+   The <head> script already set data-theme to avoid a flash. This wires
+   the switch: flips the theme, mirrors it to aria-checked + the browser
+   theme-color, and remembers the choice (storage guarded so it can never
+   throw in a locked-down context). */
+(function themeToggle(){
+  const KEY = "pr-status-theme";
+  const root = document.documentElement;
+  const btn  = document.getElementById("themeToggle");
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (!btn) return;
+
+  function paint(theme){
+    root.setAttribute("data-theme", theme);
+    btn.setAttribute("aria-checked", theme === "dark" ? "true" : "false");
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B1308" : "#0F1A0A");
+  }
+  paint(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
+
+  btn.addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    paint(next);
+    try { localStorage.setItem(KEY, next); } catch(e){}
+  });
+
+  /* Follow OS changes only while the visitor hasn't set an explicit choice */
+  if (window.matchMedia){
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+      let saved = null;
+      try { saved = localStorage.getItem(KEY); } catch(_){}
+      if (saved !== "dark" && saved !== "light") paint(e.matches ? "dark" : "light");
+    });
+  }
 })();
 </script>
 
