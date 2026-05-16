@@ -22,6 +22,20 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
 
+<script>
+  /* Set theme before paint to avoid a flash. Falls back to OS preference. */
+  (function () {
+    try {
+      var saved = localStorage.getItem('pr-theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      } else if (window.matchMedia &&
+                 window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) { /* storage blocked — default light */ }
+  })();
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -426,6 +440,63 @@
     header { padding: 20px 20px; }
     .foot-bar { flex-direction: column; }
   }
+
+  /* ════════════ THEME TOGGLE BUTTON ════════════ */
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; flex-shrink: 0;
+    background: transparent; color: var(--field);
+    border: 1px solid rgba(78,122,53,0.3); border-radius: 999px;
+    cursor: pointer; padding: 0;
+    transition: background .25s, color .25s, border-color .25s, transform .15s;
+  }
+  .theme-toggle:hover { background: var(--field); color: var(--cream); border-color: var(--field); }
+  .theme-toggle:active { transform: scale(0.94); }
+  .theme-toggle svg { width: 17px; height: 17px; display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  html[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  html[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  /* ════════════ DARK THEME ════════════ */
+  html[data-theme="dark"] {
+    --ink:    #E9E4D6;   /* now: primary text on dark surfaces */
+    --stone:  #9AA08C;   /* muted text */
+    --parch:  #2C3A22;   /* borders & dividers */
+    --field:  #7FB45B;   /* links / active / accents (lifted for contrast) */
+    --s-op-tx:    #8FC96A;
+    --s-deg-tx:   #E0B85A;
+    --s-part-tx:  #E5A858;
+    --s-major-tx: #E0855A;
+    --s-maint-tx: #8FB6CC;
+    --s-pre-tx:   #9AA08C;
+  }
+  html[data-theme="dark"] body {
+    background: #0E140C;
+    color: var(--ink);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(141,189,90,0.06), transparent 42%),
+      radial-gradient(circle at 88% 8%, rgba(212,185,106,0.05), transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  html[data-theme="dark"] .hero {
+    background: #141C10;
+    border: 1px solid #26331C;
+    box-shadow: 0 30px 70px -34px rgba(0,0,0,0.6);
+  }
+  html[data-theme="dark"] .group { background: #161E12; }
+  html[data-theme="dark"] .legend { background: #161E12; }
+  html[data-theme="dark"] .empty-state { background: #161E12; border-color: #33402A; }
+  html[data-theme="dark"] .tl-item::before { background: #0E140C; }
+  html[data-theme="dark"] .bars .b[data-tip]:hover::after { background: #1E2716; }
+  html[data-theme="dark"] .sub-form button { color: #0E140C; }
+  html[data-theme="dark"] ::selection { color: #0E140C; }
+  html[data-theme="dark"] .group-head {
+    background: linear-gradient(180deg, #1C2616, #161E12);
+  }
+  html[data-theme="dark"] .group-head .gt { color: #CBDEAF; }
+  html[data-theme="dark"] .tl-body { color: #B7C0A6; }
+  html[data-theme="dark"] .foot-col a,
+  html[data-theme="dark"] .foot-col span { color: #A9B097; }
 </style>
 </head>
 <body>
@@ -469,6 +540,17 @@
     <a class="active" aria-current="page">Status</a>
   </nav>
   <div class="header-actions">
+    <button class="theme-toggle" id="themeToggle" type="button"
+            aria-label="Switch to dark theme" title="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20 14.5A8.2 8.2 0 0 1 9.5 4 8.3 8.3 0 1 0 20 14.5z"/>
+      </svg>
+    </button>
     <a class="ghost-link" href="https://paddockroute.com.au/">← Back to site</a>
   </div>
 </header>
@@ -954,7 +1036,7 @@ function uptimePct(svc){
       </div>
       <div class="svc" style="display:block;">
         <div class="mono" style="font-size:12px;color:var(--field);letter-spacing:0.05em;">${mn.window}</div>
-        <div style="font-size:13.5px;color:#4A4639;margin-top:8px;">${mn.body}</div>
+        <div style="font-size:13.5px;color:var(--stone);margin-top:8px;">${mn.body}</div>
       </div>
     </div>`).join("");
 })();
@@ -1063,6 +1145,47 @@ function uptimePct(svc){
   btn.addEventListener("click", go);
   inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
 })();
+</script>
+
+<script>
+  /* Theme toggle — flips data-theme, persists choice, updates the control. */
+  (function () {
+    var btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    var root = document.documentElement;
+
+    function isDark() { return root.getAttribute('data-theme') === 'dark'; }
+
+    function sync() {
+      var dark = isDark();
+      btn.setAttribute('aria-label',
+        dark ? 'Switch to light theme' : 'Switch to dark theme');
+      btn.setAttribute('aria-pressed', String(dark));
+    }
+
+    btn.addEventListener('click', function () {
+      var dark = !isDark();
+      if (dark) root.setAttribute('data-theme', 'dark');
+      else root.setAttribute('data-theme', 'light');
+      try { localStorage.setItem('pr-theme', dark ? 'dark' : 'light'); } catch (e) {}
+      sync();
+    });
+
+    /* Follow OS changes only while the user hasn't set an explicit preference. */
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)')
+        .addEventListener('change', function (e) {
+          var saved;
+          try { saved = localStorage.getItem('pr-theme'); } catch (x) {}
+          if (saved !== 'dark' && saved !== 'light') {
+            root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            sync();
+          }
+        });
+    }
+
+    sync();
+  })();
 </script>
 
 </body>
