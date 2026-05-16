@@ -444,6 +444,36 @@
     .foot-bar { flex-direction: column; }
   }
 
+  /* ── DESKTOP BOARD LAYOUT ──────────────────────────────────────────────
+     The service section breaks out of the 920px reading column into a
+     wider centred board, and the group cards lay out as a responsive grid:
+     3-up on a 1080p desktop, 2-up on smaller laptops, 1-up on phones —
+     so far more of the status fits on one screen without scrolling. The
+     hero, legend, timeline and subscribe stay at reading width on purpose. */
+  .board {
+    width: min(1320px, calc(100vw - 48px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  #groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+    gap: 20px;
+    align-items: stretch;
+  }
+  #groups .group { margin-bottom: 0; }   /* equal-height tiles; grid gap spaces them */
+
+  /* tighten the 90-day strip so it stays crisp inside narrower cards
+     and shaves vertical height everywhere */
+  .bars { gap: 2px; height: 30px; }
+  .bars .b { min-width: 1px; }
+  .uptime { padding: 4px 26px 16px; }
+  .uptime-foot { margin-top: 7px; }
+
+  @media (min-width: 1500px) {
+    .board { width: min(1320px, calc(100vw - 64px)); }
+  }
+
   /* ── THEME TOGGLE SWITCH ───────────────────────────────────────────── */
   .theme-toggle {
     display: inline-flex; align-items: center; gap: 8px;
@@ -670,7 +700,7 @@
   </section>
 
   <!-- ════════════ SERVICE GROUPS ════════════ -->
-  <section>
+  <section class="board">
     <div class="sec-head">
       <h2>Current status by service</h2>
       <span class="note" id="grpNote"></span>
