@@ -255,6 +255,30 @@
   }
   .svc .state .pct { display: block; font-size: 10px; color: var(--stone); margin-top: 3px; }
 
+  /* live reachability chip */
+  .live-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.02em;
+    margin-top: 6px; padding: 3px 9px 3px 7px; border-radius: 999px;
+    border: 1px solid #E3DAC4; color: var(--stone); white-space: nowrap;
+    transition: color .25s, border-color .25s, background .25s;
+  }
+  .live-chip .lp {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--stone);
+    flex-shrink: 0; position: relative;
+  }
+  .live-chip.ok { color: var(--s-op-tx); border-color: rgba(141,189,90,0.45); background: rgba(141,189,90,0.10); }
+  .live-chip.ok .lp { background: var(--lime); }
+  .live-chip.ok .lp::after {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%;
+    border: 1.5px solid var(--lime); opacity: .6;
+    animation: ping 2.6s cubic-bezier(0,0,.2,1) infinite;
+  }
+  .live-chip.fail { color: var(--s-part-tx); border-color: rgba(216,154,62,0.5); background: rgba(216,154,62,0.12); }
+  .live-chip.fail .lp { background: var(--s-part); }
+  .live-chip.checking .lp { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
   /* ── UPTIME STRIP ── */
   .uptime {
     padding: 6px 26px 20px;
@@ -614,15 +638,28 @@
    service state — you never set it by hand. "prelaunch" services are shown
    but never count as a problem (they're roadmap, not downtime).
 
-   LIVE PING: the website service is also probed in-browser by loading the
-   favicon from paddockroute.com.au. If that fails the banner softens to a
-   "checking" note — but the manual STATUS values stay the source of truth.
+   LIVE REACHABILITY: any service given a "probe" URL is checked in-browser
+   by loading that URL as an image (no CORS issue). Checks run on load,
+   whenever the tab regains focus, and on a self-adjusting cadence: every
+   60s while everything is green, speeding up to every 12s while anything
+   looks unhealthy (faster detection and faster recovery). Each probed
+   service shows a live "checked Xs ago" chip. A probe must FAIL TWICE IN
+   A ROW before it affects anything (one blip — your wifi, an ad-blocker —
+   never trips a false alarm). On a confirmed failure of a service whose
+   manual state is "operational", that service is shown as "Reachability
+   failing" and the banner reflects it. Manual STATUS still wins the
+   worst-case: if you've set a service to "major", a passing probe will
+   NOT paper over it.
+
+   To add a live check to a future service (e.g. the API once it launches),
+   give it a "probe" pointing at any always-200 asset on that origin — a
+   favicon, a /health.png, a 1px gif — and flip its state off "prelaunch".
    ═══════════════════════════════════════════════════════════════════════ */
 
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-16T09:00:00+10:00",
+  lastUpdated: "2026-05-16T16:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -635,7 +672,7 @@ const STATUS = {
           tag: "paddockroute.com.au",
           desc: "Public site, waitlist, content pages.",
           state: "operational",
-          livePing: true            /* in-browser reachability probe */
+          probe: "https://paddockroute.com.au/favicon.ico"   /* live reachability */
         },
         {
           name: "Waitlist & sign-ups",
@@ -688,6 +725,13 @@ const STATUS = {
           state: "operational"
         },
         {
+          name: "Status site",
+          tag: "paddockroute.online",
+          desc: "This status page and its delivery edge.",
+          state: "operational",
+          probe: "https://paddockroute.online/favicon.ico"
+        },
+        {
           name: "Payments",
           desc: "Subscription billing and checkout.",
           state: "prelaunch"
@@ -711,9 +755,16 @@ const STATUS = {
     {
       type: "milestone",
       date: "16 May 2026",
+      title: "Live reachability monitoring enabled",
+      pill: "Milestone",
+      body: "paddockroute.online is live and serving. Automated in-browser reachability checks are now running for the public website and this status site — re-probed every 60 seconds with a two-strike threshold before any alert."
+    },
+    {
+      type: "milestone",
+      date: "16 May 2026",
       title: "Status page online",
       pill: "Milestone",
-      body: "Live service status is now published at paddockroute.online. The public site and waitlist are operational; the customer and driver apps are in active development ahead of the 2026 launch."
+      body: "Service status is now published at paddockroute.online. The public site and waitlist are operational; the customer and driver apps are in active development ahead of the 2026 launch."
     }
   ]
 };
@@ -798,21 +849,26 @@ function uptimePct(svc){
 
     let html = `<div class="group-head">
       <span class="gt"><span class="gicon">${g.icon}</span>${g.name}</span>
-      <span class="grp-badge" style="background:${badgeBg};color:${badgeCol}">${badgeTxt}</span>
+      <span class="grp-badge" id="grp-${gi}" style="background:${badgeBg};color:${badgeCol}">${badgeTxt}</span>
     </div>`;
 
-    g.services.forEach(s => {
+    g.services.forEach((s, si) => {
       const m = STATE_META[s.state];
       if (m.live) liveCount++; else preCount++;
       const pct = uptimePct(s);
-      html += `<div class="svc">
-        <span class="dot" style="background:${m.color}"></span>
+      const sid = `${gi}-${si}`;
+      const chip = s.probe
+        ? `<div class="live-chip checking" id="chip-${sid}"><span class="lp"></span><span class="lt">checking…</span></div>`
+        : "";
+      html += `<div class="svc" id="svc-${sid}">
+        <span class="dot" id="dot-${sid}" style="background:${m.color}"></span>
         <div class="meta">
           <div class="name">${s.name}${s.tag ? `<span class="tagchip">${s.tag}</span>` : ""}</div>
           <div class="desc">${s.desc || ""}</div>
+          ${chip}
         </div>
-        <div class="state" style="color:${m.tx}">
-          ${m.label}
+        <div class="state" id="state-${sid}" style="color:${m.tx}">
+          <span class="slabel">${m.label}</span>
           ${pct !== null ? `<span class="pct">${pct.toFixed(2)}% · 90d</span>` : `<span class="pct">not yet live</span>`}
         </div>
       </div>`;
@@ -836,19 +892,27 @@ function uptimePct(svc){
     `${liveCount} live · ${preCount} in development`;
 })();
 
-/* ── Overall banner (derived from worst LIVE state) ── */
-(function renderBanner(){
+/* ── Overall banner (manual worst-case + confirmed probe failures) ──
+   PROBE_FAIL holds service ids that are manually "operational" but have
+   failed the live reachability check twice in a row. */
+const PROBE_FAIL = new Set();
+
+function paintBanner(){
   let worst = 0, anyLive = false;
   STATUS.groups.forEach(g => g.services.forEach(s => {
     const m = STATE_META[s.state];
     if (m.live){ anyLive = true; worst = Math.max(worst, m.rank); }
   }));
+  /* a confirmed-unreachable operational service is at least a partial outage */
+  if (PROBE_FAIL.size) worst = Math.max(worst, 3);
 
   const beacon = document.getElementById("beacon");
   const title  = document.getElementById("overallTitle");
   const sub    = document.getElementById("overallSub");
-
   const preNote = "Customer &amp; driver apps are in active development ahead of the 2026 launch.";
+  const probeNote = PROBE_FAIL.size
+    ? ` <span style="color:var(--s-part-tx)">· Automated reachability check failing for ${PROBE_FAIL.size} service${PROBE_FAIL.size > 1 ? "s" : ""}.</span>`
+    : "";
   let col, t, s;
 
   if (!anyLive){
@@ -874,9 +938,38 @@ function uptimePct(svc){
   beacon.style.background = col;
   beacon.style.color = col;
   title.textContent = t;
-  sub.innerHTML = s;
+  sub.innerHTML = s + probeNote;
+}
 
-  /* overall uptime = mean of live services */
+/* Recompute one group's rollup badge, factoring in confirmed probe fails. */
+function paintGroupBadge(gi){
+  const el = document.getElementById("grp-" + gi);
+  const g = STATUS.groups[gi];
+  if (!el || !g) return;
+  let worst = -1;
+  g.services.forEach((s, si) => {
+    let r = STATE_META[s.state].rank;
+    if (PROBE_FAIL.has(gi + "-" + si)) r = Math.max(r, 3);  /* partial */
+    worst = Math.max(worst, r);
+  });
+  let txt, bg, col;
+  if (worst <= 0 && g.services.some(s => STATE_META[s.state].live)){
+    txt = "Operational";    bg = "rgba(141,189,90,0.16)"; col = "var(--s-op-tx)";
+  } else if (worst < 0){
+    txt = "In development";  bg = "rgba(122,116,104,0.14)"; col = "var(--s-pre-tx)";
+  } else {
+    const wk = Object.keys(STATE_META).find(k => STATE_META[k].rank === worst);
+    const m = STATE_META[wk] || STATE_META.partial;
+    txt = m.label;          bg = "rgba(184,90,42,0.14)";   col = m.tx;
+  }
+  el.textContent = txt;
+  el.style.background = bg;
+  el.style.color = col;
+}
+paintBanner();
+
+/* overall uptime = mean of live services (computed once) */
+(function(){
   const pcts = [];
   STATUS.groups.forEach(g => g.services.forEach(s2 => {
     const p = uptimePct(s2); if (p !== null) pcts.push(p);
@@ -956,33 +1049,118 @@ function uptimePct(svc){
     </div>`).join("");
 })();
 
-/* ── Live website reachability probe (no CORS issue: image load) ── */
-(function livePing(){
-  const target = STATUS.groups
-    .flatMap(g => g.services)
-    .find(s => s.livePing);
-  if (!target) return;
+/* ── Live reachability engine ──────────────────────────────────────────
+   Cross-origin-safe image-load probe. Runs on load, every 60s, on tab
+   focus, and when the network comes back. A service must fail TWICE in a
+   row before it's flagged (one transient blip never trips a false alarm).
+   Manual STATUS still wins worst-case — a passing probe can't hide a
+   service you've manually set to a fault state. */
+(function probeEngine(){
+  const HEALTHY_EVERY = 60000;  /* ms between rounds when all green   */
+  const WATCH_EVERY   = 12000;  /* ms between rounds while unhealthy  */
+  const PROBE_TIMEOUT = 5000;   /* ms before a single probe fails     */
+  const FAIL_THRESHOLD = 2;     /* consecutive fails to flag a service*/
 
-  const img = new Image();
-  let done = false;
-  const timer = setTimeout(() => { if (!done){ done = true; img.src = ""; } }, 6000);
+  const targets = [];
+  STATUS.groups.forEach((g, gi) => g.services.forEach((s, si) => {
+    if (s.probe) targets.push({ s, sid: `${gi}-${si}`, fails: 0, lastOk: null, ts: 0 });
+  }));
+  if (!targets.length) return;
 
-  img.onload = () => {
-    if (done) return; done = true; clearTimeout(timer);
-    /* reachable — manual STATUS stays source of truth, this just confirms */
-  };
-  img.onerror = () => {
-    if (done) return; done = true; clearTimeout(timer);
-    /* If the manual state says operational but we can't reach it, soften
-       the banner with a non-alarming note rather than declaring an outage. */
-    if (target.state === "operational"){
-      const sub = document.getElementById("overallSub");
-      sub.innerHTML = sub.innerHTML +
-        ' <span style="color:var(--straw)">· Live reachability check inconclusive — verifying.</span>';
+  function probeOne(t){
+    return new Promise(resolve => {
+      const img = new Image();
+      let done = false;
+      const to = setTimeout(() => { if(!done){ done = true; img.src = ""; resolve(false); } }, PROBE_TIMEOUT);
+      img.onload  = () => { if(!done){ done = true; clearTimeout(to); resolve(true);  } };
+      img.onerror = () => { if(!done){ done = true; clearTimeout(to); resolve(false); } };
+      const sep = t.s.probe.includes("?") ? "&" : "?";
+      img.src = t.s.probe + sep + "_=" + Date.now();   /* cache-bust */
+    });
+  }
+
+  function setChip(t){
+    const chip = document.getElementById("chip-" + t.sid);
+    if (!chip) return;
+    const lt = chip.querySelector(".lt");
+    if (t.lastOk === true){
+      chip.className = "live-chip ok";   lt.textContent = "live · just now";
+    } else if (t.fails >= FAIL_THRESHOLD){
+      chip.className = "live-chip fail";  lt.textContent = "unreachable";
+    } else {
+      chip.className = "live-chip checking"; lt.textContent = "re-checking…";
     }
-  };
-  /* cache-bust so we test the live origin each load */
-  img.src = "https://paddockroute.com.au/favicon.ico?_=" + Date.now();
+    t.ts = Date.now();
+  }
+
+  function applyState(t){
+    const manualOp = (t.s.state === "operational");
+    const confirmedDown = (t.fails >= FAIL_THRESHOLD);
+    const dot   = document.getElementById("dot-" + t.sid);
+    const state = document.getElementById("state-" + t.sid);
+    if (!state) return;
+    const lbl = state.querySelector(".slabel");
+    if (manualOp && confirmedDown){
+      PROBE_FAIL.add(t.sid);
+      if (dot) dot.style.background = "var(--s-part)";
+      state.style.color = "var(--s-part-tx)";
+      if (lbl) lbl.textContent = "Reachability failing";
+    } else if (PROBE_FAIL.has(t.sid)){
+      PROBE_FAIL.delete(t.sid);                       /* recovered */
+      const m = STATE_META[t.s.state];
+      if (dot) dot.style.background = m.color;
+      state.style.color = m.tx;
+      if (lbl) lbl.textContent = m.label;
+    }
+    paintGroupBadge(parseInt(t.sid, 10));
+    paintBanner();
+  }
+
+  let allHealthy = true;
+  let timer = null;
+
+  async function cycle(){
+    let healthy = true;
+    for (const t of targets){
+      const ok = await probeOne(t);
+      t.lastOk = ok;
+      t.fails  = ok ? 0 : (t.fails + 1);
+      if (!ok || PROBE_FAIL.has(t.sid)) healthy = false;
+      setChip(t);
+      applyState(t);
+    }
+    allHealthy = healthy;
+    schedule();
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer = setTimeout(cycle, allHealthy ? HEALTHY_EVERY : WATCH_EVERY);
+  }
+
+  function cycleNow(){           /* jump the queue (focus / back online) */
+    clearTimeout(timer);
+    cycle();
+  }
+
+  /* "checked Xs ago" ticker */
+  setInterval(() => {
+    targets.forEach(t => {
+      const chip = document.getElementById("chip-" + t.sid);
+      if (!chip || !t.ts) return;
+      const lt = chip.querySelector(".lt");
+      const secs = Math.floor((Date.now() - t.ts) / 1000);
+      const ago = secs < 5 ? "just now"
+                : secs < 60 ? secs + "s ago"
+                : Math.floor(secs/60) + "m ago";
+      if (chip.classList.contains("ok"))        lt.textContent = "live · " + ago;
+      else if (chip.classList.contains("fail")) lt.textContent = "unreachable · " + ago;
+    });
+  }, 1000);
+
+  cycle();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) cycleNow(); });
+  window.addEventListener("online", cycleNow);
 })();
 
 /* ── Subscribe form ──
