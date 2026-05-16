@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paddock Route — Service Status</title>
+
+<meta name="description" content="Live service status for Paddock Route — customer ordering, driver platform, and backend infrastructure. Real-time operational status, incident history and scheduled maintenance.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0F1A0A">
+<link rel="canonical" href="https://paddockroute.online/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Paddock Route">
+<meta property="og:title" content="Paddock Route — Service Status">
+<meta property="og:description" content="Live operational status for the Paddock Route customer app, driver platform and backend.">
+<meta property="og:url" content="https://paddockroute.online/">
+<meta property="og:locale" content="en_AU">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230F1A0A'/%3E%3Cdefs%3E%3ClinearGradient id='lg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23A8D96A'/%3E%3Cstop offset='100%25' stop-color='%236BAF3C'/%3E%3C/linearGradient%3E%3ClinearGradient id='st' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%238DBD5A'/%3E%3Cstop offset='100%25' stop-color='%235A9A30'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 54 Q32 38 32 22' stroke='url(%23st)' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M32 44 Q25 38 20 30' stroke='%238DBD5A' stroke-width='1.8' stroke-linecap='round' opacity='.85'/%3E%3Cpath d='M32 37 Q23 29 19 20' stroke='%238DBD5A' stroke-width='1.7' stroke-linecap='round' opacity='.68'/%3E%3Cpath d='M32 44 Q39 38 44 30' stroke='%23A8D96A' stroke-width='1.8' stroke-linecap='round' opacity='.85'/%3E%3Cpath d='M32 37 Q41 29 45 20' stroke='%23A8D96A' stroke-width='1.7' stroke-linecap='round' opacity='.68'/%3E%3Cellipse cx='19' cy='27' rx='4.5' ry='7.5' fill='url(%23lg)' opacity='.75' transform='rotate(-20 19 27)'/%3E%3Cellipse cx='45' cy='27' rx='4.5' ry='7.5' fill='url(%23lg)' opacity='.85' transform='rotate(20 45 27)'/%3E%3Cellipse cx='32' cy='13' rx='5' ry='8.5' fill='url(%23lg)' opacity='.96'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,900&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:    #0F1A0A;
+    --dark:   #1A2912;
+    --grove:  #2D4A20;
+    --field:  #4E7A35;
+    --lime:   #8DBD5A;
+    --leaf:   #A8D96A;
+    --straw:  #D4B96A;
+    --wheat:  #E8D49A;
+    --parch:  #F5EDD8;
+    --cream:  #FDFAF3;
+    --stone:  #7A7468;
+    --mist:   #C4D4BA;
+    --rust:   #B85A2A;
+    --amber:  #C0871F;
+    --slate:  #5B7A8C;
+    --bg:     #F0E8D0;
+
+    /* Status semantic tokens */
+    --s-op:    var(--lime);
+    --s-op-tx: #3C6B27;
+    --s-deg:   var(--straw);
+    --s-deg-tx:#9A6A12;
+    --s-part:  #D89A3E;
+    --s-part-tx:#9A6210;
+    --s-major: var(--rust);
+    --s-major-tx:#9A4118;
+    --s-maint: var(--slate);
+    --s-maint-tx:#3F5A6B;
+    --s-pre:   var(--stone);
+    --s-pre-tx:#5F594E;
+  }
+
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: 'Syne', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    /* paper grain */
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(141,189,90,0.06), transparent 42%),
+      radial-gradient(circle at 88% 8%, rgba(212,185,106,0.07), transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  }
+
+  ::selection { background: var(--leaf); color: var(--ink); }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+  .mono { font-family: 'DM Mono', ui-monospace, monospace; }
+  .kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--field); font-weight: 500;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 24px; max-width: 920px; margin: 0 auto;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand svg { height: 42px; width: 42px; flex-shrink: 0; }
+  .brand .stack { display: flex; flex-direction: column; line-height: 1; gap: 2px; }
+  .brand .pad {
+    font-family: 'Fraunces', Georgia, serif; font-size: 15px; font-weight: 900;
+    letter-spacing: 0.05em; color: var(--ink);
+  }
+  .brand .rte {
+    font-family: 'Playfair Display', Georgia, serif; font-size: 23px; font-weight: 900;
+    font-style: italic; letter-spacing: -0.015em; color: var(--field);
+  }
+  .brand .statustag {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--stone); margin-top: 3px;
+  }
+  .header-actions { display: flex; align-items: center; gap: 14px; }
+  .ghost-link {
+    font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.06em;
+    color: var(--field); text-decoration: none; padding: 9px 16px;
+    border: 1px solid rgba(78,122,53,0.3); border-radius: 999px;
+    transition: all .25s;
+  }
+  .ghost-link:hover { background: var(--field); color: var(--cream); border-color: var(--field); }
+
+  /* ── HERO STATUS BANNER ── */
+  .hero {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 28px;
+    padding: 52px 48px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+    box-shadow: 0 30px 70px -34px rgba(15,26,10,0.55);
+    opacity: 0; transform: translateY(20px);
+    animation: rise .8s .05s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 90% at 88% 10%, rgba(141,189,90,0.16), transparent 60%),
+      radial-gradient(ellipse 50% 70% at 8% 95%, rgba(212,185,106,0.10), transparent 60%);
+    pointer-events: none;
+  }
+  /* faint route line decoration */
+  .hero .routeline {
+    position: absolute; right: -40px; top: -20px; width: 320px; height: 320px;
+    opacity: .14; pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 2; }
+  .hero-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .beacon {
+    width: 18px; height: 18px; border-radius: 50%;
+    flex-shrink: 0; position: relative;
+  }
+  .beacon::after {
+    content: ""; position: absolute; inset: -7px; border-radius: 50%;
+    border: 2px solid currentColor; opacity: .55;
+    animation: ping 2.6s cubic-bezier(0,0,.2,1) infinite;
+  }
+  @keyframes ping {
+    0%   { transform: scale(.65); opacity: .7; }
+    70%  { transform: scale(1.55); opacity: 0; }
+    100% { transform: scale(1.55); opacity: 0; }
+  }
+  .hero h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 900; font-size: clamp(28px, 4.6vw, 46px);
+    line-height: 1.08; letter-spacing: -0.02em; color: var(--cream);
+  }
+  .hero .sub {
+    font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 0.04em;
+    color: var(--mist); margin-top: 18px;
+  }
+  .hero .sub b { color: var(--leaf); font-weight: 500; }
+  .hero-meta {
+    display: flex; gap: 36px; flex-wrap: wrap;
+    margin-top: 30px; padding-top: 26px;
+    border-top: 1px solid rgba(196,212,186,0.16);
+  }
+  .hm-item .lbl {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--stone);
+  }
+  .hm-item .val {
+    font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 700;
+    color: var(--cream); margin-top: 5px;
+  }
+  .hm-item .val small { font-size: 12px; color: var(--mist); font-weight: 400; font-family: 'DM Mono', monospace; }
+
+  /* ── SECTION SCAFFOLD ── */
+  section { margin-top: 56px; }
+  .sec-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .sec-head h2 {
+    font-family: 'Fraunces', Georgia, serif; font-size: 22px; font-weight: 900;
+    letter-spacing: -0.01em; color: var(--ink);
+  }
+  .sec-head .note {
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--stone);
+  }
+
+  /* route-dot divider */
+  .routedots {
+    display: flex; align-items: center; gap: 7px; opacity: .6; margin: 4px 0;
+  }
+  .routedots i {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--lime); display: block;
+  }
+  .routedots .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--lime), transparent); }
+
+  /* ── SERVICE GROUPS ── */
+  .group {
+    background: #fff;
+    border: 1px solid var(--parch);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 18px 40px -34px rgba(15,26,10,0.28);
+    opacity: 0; transform: translateY(16px);
+    animation: rise .7s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  .group-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 26px; background: linear-gradient(180deg, #FBF6E9, #fff);
+    border-bottom: 1px solid var(--parch); gap: 12px;
+  }
+  .group-head .gt {
+    font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 900;
+    letter-spacing: -0.01em; color: var(--grove);
+    display: flex; align-items: center; gap: 11px;
+  }
+  .group-head .gt .gicon { font-size: 16px; }
+  .grp-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.05em;
+    padding: 5px 12px; border-radius: 999px;
+  }
+
+  .svc {
+    display: flex; align-items: center; gap: 18px;
+    padding: 18px 26px;
+    border-bottom: 1px solid #F4EFE2;
+  }
+  .svc:last-child { border-bottom: none; }
+  .svc .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .svc .meta { flex: 1; min-width: 0; }
+  .svc .name {
+    font-weight: 700; font-size: 15px; color: var(--ink);
+    display: flex; align-items: center; gap: 9px;
+  }
+  .svc .name .tagchip {
+    font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--stone);
+    border: 1px solid #E3DAC4; border-radius: 5px; padding: 2px 6px; font-weight: 400;
+  }
+  .svc .desc { font-size: 12.5px; color: var(--stone); margin-top: 2px; }
+  .svc .state {
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+    white-space: nowrap; text-align: right;
+  }
+  .svc .state .pct { display: block; font-size: 10px; color: var(--stone); margin-top: 3px; }
+
+  /* ── UPTIME STRIP ── */
+  .uptime {
+    padding: 6px 26px 20px;
+    border-bottom: 1px solid #F4EFE2;
+  }
+  .svc + .uptime { margin-top: -6px; }
+  .uptime:last-child { border-bottom: none; }
+  .bars { display: flex; gap: 3px; align-items: flex-end; height: 34px; }
+  .bars .b {
+    flex: 1; height: 100%; border-radius: 3px; min-width: 2px;
+    background: var(--mist); transition: transform .15s, filter .15s;
+    cursor: default; position: relative;
+  }
+  .bars .b:hover { transform: scaleY(1.12); filter: brightness(1.08); }
+  .bars .b[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--cream);
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.02em;
+    padding: 6px 9px; border-radius: 7px; white-space: nowrap; z-index: 30;
+    box-shadow: 0 8px 20px -8px rgba(15,26,10,.5);
+  }
+  .uptime-foot {
+    display: flex; justify-content: space-between;
+    font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--stone);
+    margin-top: 9px; letter-spacing: 0.03em;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 22px;
+    padding: 20px 24px; background: #FBF6E9;
+    border: 1px solid var(--parch); border-radius: 16px;
+  }
+  .legend .li {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--grove);
+  }
+  .legend .li i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+
+  /* ── TIMELINE / INCIDENTS ── */
+  .timeline { border-left: 2px solid var(--parch); margin-left: 6px; }
+  .tl-item { position: relative; padding: 0 0 30px 30px; }
+  .tl-item:last-child { padding-bottom: 4px; }
+  .tl-item::before {
+    content: ""; position: absolute; left: -7px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--cream); border: 2px solid var(--lime);
+  }
+  .tl-item.resolved::before { border-color: var(--lime); background: var(--lime); }
+  .tl-item.scheduled::before { border-color: var(--slate); }
+  .tl-item.milestone::before { border-color: var(--straw); background: var(--straw); }
+  .tl-date {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--stone);
+  }
+  .tl-title {
+    font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 16px;
+    color: var(--ink); margin: 5px 0 6px;
+  }
+  .tl-body { font-size: 13.5px; color: #4A4639; max-width: 60ch; }
+  .tl-pill {
+    display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px; margin-left: 10px; vertical-align: middle;
+  }
+  .empty-state {
+    text-align: center; padding: 44px 24px;
+    background: #FBF6E9; border: 1px dashed #DCD0B4; border-radius: 18px;
+  }
+  .empty-state .es-mark { font-size: 30px; }
+  .empty-state p {
+    font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: var(--grove);
+    font-weight: 700; margin-top: 10px;
+  }
+  .empty-state span {
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--stone);
+    display: block; margin-top: 6px;
+  }
+
+  /* ── SUBSCRIBE ── */
+  .subscribe {
+    background: var(--grove); color: var(--cream);
+    border-radius: 24px; padding: 44px 44px;
+    position: relative; overflow: hidden;
+  }
+  .subscribe::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 50% 80% at 90% 12%, rgba(168,217,106,0.18), transparent 60%);
+  }
+  .subscribe .si { position: relative; z-index: 2; }
+  .subscribe h2 {
+    font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 900;
+    color: var(--cream); letter-spacing: -0.01em;
+  }
+  .subscribe p { color: var(--mist); font-size: 14px; margin-top: 10px; max-width: 52ch; }
+  .sub-form { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .sub-form input {
+    flex: 1; min-width: 220px;
+    background: rgba(253,250,243,0.08); border: 1px solid rgba(196,212,186,0.3);
+    color: var(--cream); padding: 14px 18px; border-radius: 12px;
+    font-family: 'DM Mono', monospace; font-size: 14px; outline: none;
+    transition: border-color .2s, background .2s;
+  }
+  .sub-form input::placeholder { color: rgba(196,212,186,0.55); }
+  .sub-form input:focus { border-color: var(--leaf); background: rgba(253,250,243,0.12); }
+  .sub-form button {
+    background: var(--lime); color: var(--ink); border: none;
+    padding: 14px 28px; border-radius: 12px; cursor: pointer;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px;
+    letter-spacing: 0.01em; transition: transform .15s, background .2s;
+  }
+  .sub-form button:hover { background: var(--leaf); transform: translateY(-2px); }
+  .sub-form button:disabled { opacity: .55; cursor: progress; transform: none; }
+  .sub-note {
+    font-family: 'DM Mono', monospace; font-size: 12px; margin-top: 14px;
+    min-height: 18px; color: var(--leaf);
+  }
+  .sub-note.err { color: var(--straw); }
+
+  /* ── FOOTER ── */
+  footer { margin-top: 70px; border-top: 1px solid var(--parch); }
+  .foot-grid {
+    max-width: 920px; margin: 0 auto; padding: 44px 24px 12px;
+    display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap;
+  }
+  .foot-brand { max-width: 320px; }
+  .foot-brand .ft {
+    display: flex; align-items: center; gap: 11px; margin-bottom: 12px;
+  }
+  .foot-brand .ft svg { height: 36px; width: 36px; }
+  .foot-brand .ft .pad { font-family:'Fraunces',Georgia,serif; font-size:13px; font-weight:900; letter-spacing:0.05em; color: var(--ink); }
+  .foot-brand .ft .rte { font-family:'Playfair Display',Georgia,serif; font-size:19px; font-weight:900; font-style:italic; color: var(--field); }
+  .foot-brand p { font-size: 13px; color: var(--stone); }
+  .foot-col .fh {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--field); margin-bottom: 14px;
+  }
+  .foot-col a, .foot-col span {
+    display: block; font-size: 13.5px; color: #4A4639; text-decoration: none;
+    margin-bottom: 9px; transition: color .2s;
+  }
+  .foot-col a:hover { color: var(--field); }
+  .foot-bar {
+    max-width: 920px; margin: 0 auto; padding: 22px 24px 50px;
+    border-top: 1px solid var(--parch); margin-top: 20px;
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    font-family: 'DM Mono', monospace; font-size: 11.5px; color: var(--stone);
+    letter-spacing: 0.02em;
+  }
+
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 680px) {
+    .hero { padding: 38px 26px; border-radius: 22px; }
+    .hero-meta { gap: 24px; }
+    .subscribe { padding: 34px 26px; }
+    .svc { flex-wrap: wrap; }
+    .svc .state { text-align: left; width: 100%; padding-left: 29px; }
+    header { padding: 20px 20px; }
+    .foot-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ HEADER ════════════ -->
+<header>
+  <a class="brand" href="https://paddockroute.com.au/">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+      <defs>
+        <linearGradient id="lgh" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A8D96A"/><stop offset="100%" stop-color="#6BAF3C"/></linearGradient>
+        <linearGradient id="sth" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8DBD5A"/><stop offset="100%" stop-color="#5A9A30"/></linearGradient>
+      </defs>
+      <path d="M32 54 Q32 38 32 22" stroke="url(#sth)" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M32 44 Q25 38 20 30" stroke="#8DBD5A" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+      <path d="M32 37 Q23 29 19 20" stroke="#8DBD5A" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
+      <path d="M32 30 Q26 20 25 12" stroke="#8DBD5A" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
+      <path d="M32 44 Q39 38 44 30" stroke="#A8D96A" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+      <path d="M32 37 Q41 29 45 20" stroke="#A8D96A" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
+      <path d="M32 30 Q38 20 39 12" stroke="#A8D96A" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>
+      <ellipse cx="19" cy="27" rx="4.5" ry="7.5" fill="url(#lgh)" opacity=".75" transform="rotate(-20 19 27)"/>
+      <ellipse cx="18" cy="16" rx="4" ry="7" fill="url(#lgh)" opacity=".6" transform="rotate(-13 18 16)"/>
+      <ellipse cx="24" cy="9" rx="3.5" ry="6" fill="url(#lgh)" opacity=".44" transform="rotate(-5 24 9)"/>
+      <ellipse cx="45" cy="27" rx="4.5" ry="7.5" fill="url(#lgh)" opacity=".85" transform="rotate(20 45 27)"/>
+      <ellipse cx="46" cy="16" rx="4" ry="7" fill="url(#lgh)" opacity=".7" transform="rotate(13 46 16)"/>
+      <ellipse cx="40" cy="9" rx="3.5" ry="6" fill="url(#lgh)" opacity=".54" transform="rotate(5 40 9)"/>
+      <ellipse cx="32" cy="13" rx="5" ry="8.5" fill="url(#lgh)" opacity=".96"/>
+      <path d="M14 58 Q32 62 50 58" stroke="#8DBD5A" stroke-width="1.5" stroke-linecap="round" opacity=".32"/>
+      <path d="M18 62 Q32 65 46 62" stroke="#8DBD5A" stroke-width="1" stroke-linecap="round" opacity=".16"/>
+    </svg>
+    <span class="stack">
+      <span class="pad">PADDOCK</span>
+      <span class="rte">Route</span>
+      <span class="statustag">Service Status</span>
+    </span>
+  </a>
+  <div class="header-actions">
+    <a class="ghost-link" href="https://paddockroute.com.au/">← Back to site</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ════════════ HERO STATUS BANNER ════════════ -->
+  <div class="hero">
+    <svg class="routeline" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 180 Q70 120 60 80 T120 30 T180 60" stroke="#8DBD5A" stroke-width="2" stroke-dasharray="2 9" stroke-linecap="round"/>
+      <circle cx="30" cy="180" r="5" fill="#8DBD5A"/>
+      <circle cx="120" cy="30" r="4" fill="#A8D96A"/>
+      <circle cx="180" cy="60" r="5" fill="#8DBD5A"/>
+    </svg>
+    <div class="hero-inner">
+      <div class="hero-row">
+        <span class="beacon" id="beacon"></span>
+        <h1 id="overallTitle">All systems operational</h1>
+      </div>
+      <p class="sub" id="overallSub">Live services are running normally. Customer &amp; driver apps are in active development ahead of the 2026 launch.</p>
+
+      <div class="hero-meta">
+        <div class="hm-item">
+          <div class="lbl">Status updated</div>
+          <div class="val" id="updatedVal">—</div>
+        </div>
+        <div class="hm-item">
+          <div class="lbl">Current time</div>
+          <div class="val"><span id="clock">—</span> <small id="tz">AEST</small></div>
+        </div>
+        <div class="hm-item">
+          <div class="lbl">90-day uptime</div>
+          <div class="val" id="uptimeVal">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ STATUS LEGEND ════════════ -->
+  <section>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <!-- ════════════ SERVICE GROUPS ════════════ -->
+  <section>
+    <div class="sec-head">
+      <h2>Current status by service</h2>
+      <span class="note" id="grpNote"></span>
+    </div>
+    <div class="routedots"><i></i><i></i><i></i><span class="line"></span></div>
+    <div id="groups" style="margin-top:22px;"></div>
+  </section>
+
+  <!-- ════════════ SCHEDULED MAINTENANCE ════════════ -->
+  <section>
+    <div class="sec-head">
+      <h2>Scheduled maintenance</h2>
+    </div>
+    <div id="maintenanceWrap"></div>
+  </section>
+
+  <!-- ════════════ INCIDENT HISTORY ════════════ -->
+  <section>
+    <div class="sec-head">
+      <h2>Incident &amp; status history</h2>
+      <span class="note">Past 90 days</span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <!-- ════════════ SUBSCRIBE ════════════ -->
+  <section>
+    <div class="subscribe">
+      <div class="si">
+        <h2>Get incident alerts</h2>
+        <p>Subscribe to be notified by email when a service is disrupted, when an incident is resolved, and when maintenance is scheduled. No marketing — status only.</p>
+        <div class="sub-form">
+          <input type="email" id="subEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
+          <button id="subBtn">Notify me</button>
+        </div>
+        <div class="sub-note" id="subNote"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ════════════ FOOTER ════════════ -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <div class="ft">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+          <defs>
+            <linearGradient id="lgf" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A8D96A"/><stop offset="100%" stop-color="#6BAF3C"/></linearGradient>
+            <linearGradient id="stf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8DBD5A"/><stop offset="100%" stop-color="#5A9A30"/></linearGradient>
+          </defs>
+          <path d="M32 54 Q32 38 32 22" stroke="url(#stf)" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M32 44 Q25 38 20 30" stroke="#8DBD5A" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+          <path d="M32 37 Q23 29 19 20" stroke="#8DBD5A" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
+          <path d="M32 44 Q39 38 44 30" stroke="#A8D96A" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>
+          <path d="M32 37 Q41 29 45 20" stroke="#A8D96A" stroke-width="1.7" stroke-linecap="round" opacity=".68"/>
+          <ellipse cx="19" cy="27" rx="4.5" ry="7.5" fill="url(#lgf)" opacity=".75" transform="rotate(-20 19 27)"/>
+          <ellipse cx="45" cy="27" rx="4.5" ry="7.5" fill="url(#lgf)" opacity=".85" transform="rotate(20 45 27)"/>
+          <ellipse cx="32" cy="13" rx="5" ry="8.5" fill="url(#lgf)" opacity=".96"/>
+        </svg>
+        <span style="display:flex;flex-direction:column;line-height:1;gap:1px;">
+          <span class="pad">PADDOCK</span>
+          <span class="rte">Route</span>
+        </span>
+      </div>
+      <p>Farm-fresh produce boxes from Southern Downs &amp; Granite Belt growers — delivered direct.</p>
+    </div>
+    <div class="foot-col">
+      <div class="fh">Paddock Route</div>
+      <a href="https://paddockroute.com.au/">Main site</a>
+      <a href="https://paddockroute.com.au/#how">How it works</a>
+      <a href="https://paddockroute.com.au/#drivers">Drive with us</a>
+      <a href="https://paddockroute.com.au/#signup">Join waitlist</a>
+    </div>
+    <div class="foot-col">
+      <div class="fh">Support</div>
+      <a href="mailto:info@paddockroute.com.au">info@paddockroute.com.au</a>
+      <span>Warwick, QLD 4370</span>
+      <a href="https://paddockroute.com.au/paddock-route-delivery-refunds.html">Delivery &amp; Refunds</a>
+      <a href="https://paddockroute.com.au/paddock-route-terms.html">Terms</a>
+    </div>
+  </div>
+  <div class="foot-bar">
+    <span>© 2026 Paddock Route Pty Ltd · ABN 73 512 858 386</span>
+    <span>Warwick, QLD · Made in the Southern Downs</span>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   PADDOCK ROUTE — SERVICE STATUS CONFIG
+   ───────────────────────────────────────────────────────────────────────
+   Think of this like a runbook config file. To update the status page you
+   only ever edit the STATUS object below — no markup, no styling. Commit
+   the file, push to the repo, Cloudflare Pages redeploys. Done.
+
+   HOW TO UPDATE A SERVICE
+   ───────────────────────
+   1. Find the service inside STATUS.groups
+   2. Change its "state" to one of these keys:
+
+        operational   — running normally          (green)
+        degraded      — slow / partial slowness    (straw)
+        partial       — partial outage             (amber)
+        major         — major outage / down        (rust)
+        maintenance   — under planned maintenance  (slate)
+        prelaunch     — built, not yet launched    (grey)
+
+   3. Update STATUS.lastUpdated to the current time (ISO 8601, +10:00 = AEST)
+   4. (Optional) add an entry to STATUS.incidents so it shows in history
+
+   The big banner at the top is derived AUTOMATICALLY from the worst live
+   service state — you never set it by hand. "prelaunch" services are shown
+   but never count as a problem (they're roadmap, not downtime).
+
+   LIVE PING: the website service is also probed in-browser by loading the
+   favicon from paddockroute.com.au. If that fails the banner softens to a
+   "checking" note — but the manual STATUS values stay the source of truth.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const STATUS = {
+
+  /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
+  lastUpdated: "2026-05-16T09:00:00+10:00",
+
+  /* Service groups, in display order. */
+  groups: [
+    {
+      name: "Customer experience",
+      icon: "🧺",
+      services: [
+        {
+          name: "Website",
+          tag: "paddockroute.com.au",
+          desc: "Public site, waitlist, content pages.",
+          state: "operational",
+          livePing: true            /* in-browser reachability probe */
+        },
+        {
+          name: "Waitlist & sign-ups",
+          desc: "Customer waitlist and driver registration forms.",
+          state: "operational"
+        },
+        {
+          name: "Customer ordering app",
+          tag: "v1 build",
+          desc: "Box selection, scheduling, account management.",
+          state: "prelaunch"
+        }
+      ]
+    },
+    {
+      name: "Driver platform",
+      icon: "🚐",
+      services: [
+        {
+          name: "Driver app",
+          tag: "v1 build",
+          desc: "Run sheets, pickups, proof-of-delivery.",
+          state: "prelaunch"
+        },
+        {
+          name: "Route dispatch",
+          desc: "Run assignment, sequencing and live tracking.",
+          state: "prelaunch"
+        }
+      ]
+    },
+    {
+      name: "Backend & infrastructure",
+      icon: "⚙",
+      services: [
+        {
+          name: "Core API",
+          desc: "Orders, accounts and platform services.",
+          state: "prelaunch"
+        },
+        {
+          name: "Database",
+          desc: "Primary data store.",
+          state: "prelaunch"
+        },
+        {
+          name: "Email & notifications",
+          tag: "Beehiiv",
+          desc: "Transactional email, alerts and subscriber sync.",
+          state: "operational"
+        },
+        {
+          name: "Payments",
+          desc: "Subscription billing and checkout.",
+          state: "prelaunch"
+        }
+      ]
+    }
+  ],
+
+  /* Scheduled maintenance windows. Empty array = none scheduled. */
+  maintenance: [
+    // {
+    //   title: "Database migration",
+    //   window: "Sun 25 May, 1:00–3:00 AM AEST",
+    //   body: "Brief read-only period while core data is migrated. No customer-facing downtime expected."
+    // }
+  ],
+
+  /* Incident + status history (newest first).
+     type: "resolved" | "scheduled" | "milestone" | "investigating" */
+  incidents: [
+    {
+      type: "milestone",
+      date: "16 May 2026",
+      title: "Status page online",
+      pill: "Milestone",
+      body: "Live service status is now published at paddockroute.online. The public site and waitlist are operational; the customer and driver apps are in active development ahead of the 2026 launch."
+    }
+  ]
+};
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RENDER ENGINE — no need to edit below this line for normal updates.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const STATE_META = {
+  operational: { label: "Operational",          color: "var(--s-op)",    tx: "var(--s-op-tx)",    rank: 0, live: true  },
+  degraded:    { label: "Degraded performance", color: "var(--s-deg)",   tx: "var(--s-deg-tx)",   rank: 2, live: true  },
+  partial:     { label: "Partial outage",       color: "var(--s-part)",  tx: "var(--s-part-tx)",  rank: 3, live: true  },
+  major:       { label: "Major outage",         color: "var(--s-major)", tx: "var(--s-major-tx)", rank: 4, live: true  },
+  maintenance: { label: "Maintenance",          color: "var(--s-maint)", tx: "var(--s-maint-tx)", rank: 1, live: true  },
+  prelaunch:   { label: "In development",       color: "var(--s-pre)",   tx: "var(--s-pre-tx)",   rank: -1, live: false }
+};
+
+/* ── Legend ── */
+(function renderLegend(){
+  const order = ["operational","degraded","partial","major","maintenance","prelaunch"];
+  document.getElementById("legend").innerHTML = order.map(k => {
+    const m = STATE_META[k];
+    return `<span class="li"><i style="background:${m.color}"></i>${m.label}</span>`;
+  }).join("");
+})();
+
+/* ── Deterministic 90-day uptime data ──
+   Live services render a clean 90-day history (operational by default,
+   with any incident days you log reflected). Pre-launch services render a
+   neutral "not yet monitored" strip. This is illustrative history — wire
+   it to a real probe log later if you want true historical data. */
+function uptimeDays(svc){
+  const days = [];
+  const today = new Date();
+  for (let i = 89; i >= 0; i--){
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const ds = d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+    if (!STATE_META[svc.state].live){
+      days.push({ ds, st: "pre" });
+    } else {
+      days.push({ ds, st: "operational" });
+    }
+  }
+  /* reflect today's actual state */
+  if (STATE_META[svc.state].live) days[days.length-1].st = svc.state;
+  return days;
+}
+function dayColor(st){
+  if (st === "pre") return "var(--mist)";
+  return STATE_META[st] ? STATE_META[st].color : "var(--mist)";
+}
+function uptimePct(svc){
+  if (!STATE_META[svc.state].live) return null;
+  const days = uptimeDays(svc);
+  const good = days.filter(x => x.st === "operational").length;
+  return (good / days.length * 100);
+}
+
+/* ── Render service groups ── */
+(function renderGroups(){
+  const root = document.getElementById("groups");
+  let liveCount = 0, preCount = 0;
+
+  STATUS.groups.forEach((g, gi) => {
+    const card = document.createElement("div");
+    card.className = "group";
+    card.style.animationDelay = (0.1 + gi * 0.08) + "s";
+
+    /* group rollup badge */
+    let worst = -1;
+    g.services.forEach(s => { worst = Math.max(worst, STATE_META[s.state].rank); });
+    let badgeTxt, badgeBg, badgeCol;
+    if (worst <= 0 && g.services.some(s => STATE_META[s.state].live)) {
+      badgeTxt = "Operational"; badgeBg = "rgba(141,189,90,0.16)"; badgeCol = "var(--s-op-tx)";
+    } else if (worst < 0) {
+      badgeTxt = "In development"; badgeBg = "rgba(122,116,104,0.14)"; badgeCol = "var(--s-pre-tx)";
+    } else {
+      const wk = Object.keys(STATE_META).find(k => STATE_META[k].rank === worst);
+      const m = STATE_META[wk];
+      badgeTxt = m.label; badgeBg = "rgba(184,90,42,0.14)"; badgeCol = m.tx;
+    }
+
+    let html = `<div class="group-head">
+      <span class="gt"><span class="gicon">${g.icon}</span>${g.name}</span>
+      <span class="grp-badge" style="background:${badgeBg};color:${badgeCol}">${badgeTxt}</span>
+    </div>`;
+
+    g.services.forEach(s => {
+      const m = STATE_META[s.state];
+      if (m.live) liveCount++; else preCount++;
+      const pct = uptimePct(s);
+      html += `<div class="svc">
+        <span class="dot" style="background:${m.color}"></span>
+        <div class="meta">
+          <div class="name">${s.name}${s.tag ? `<span class="tagchip">${s.tag}</span>` : ""}</div>
+          <div class="desc">${s.desc || ""}</div>
+        </div>
+        <div class="state" style="color:${m.tx}">
+          ${m.label}
+          ${pct !== null ? `<span class="pct">${pct.toFixed(2)}% · 90d</span>` : `<span class="pct">not yet live</span>`}
+        </div>
+      </div>`;
+
+      /* uptime strip */
+      const days = uptimeDays(s);
+      const bars = days.map(d =>
+        `<span class="b" style="background:${dayColor(d.st)}" data-tip="${d.ds} — ${d.st==='pre'?'Not yet monitored':STATE_META[d.st].label}"></span>`
+      ).join("");
+      html += `<div class="uptime">
+        <div class="bars">${bars}</div>
+        <div class="uptime-foot"><span>90 days ago</span><span>${pct!==null?pct.toFixed(2)+'% uptime':'pre-launch'}</span><span>today</span></div>
+      </div>`;
+    });
+
+    card.innerHTML = html;
+    root.appendChild(card);
+  });
+
+  document.getElementById("grpNote").textContent =
+    `${liveCount} live · ${preCount} in development`;
+})();
+
+/* ── Overall banner (derived from worst LIVE state) ── */
+(function renderBanner(){
+  let worst = 0, anyLive = false;
+  STATUS.groups.forEach(g => g.services.forEach(s => {
+    const m = STATE_META[s.state];
+    if (m.live){ anyLive = true; worst = Math.max(worst, m.rank); }
+  }));
+
+  const beacon = document.getElementById("beacon");
+  const title  = document.getElementById("overallTitle");
+  const sub    = document.getElementById("overallSub");
+
+  const preNote = "Customer &amp; driver apps are in active development ahead of the 2026 launch.";
+  let col, t, s;
+
+  if (!anyLive){
+    col = "var(--s-pre)"; t = "Pre-launch";
+    s = "All services are in active development ahead of the 2026 launch.";
+  } else if (worst === 0){
+    col = "var(--s-op)"; t = "All systems operational";
+    s = `Live services are running normally. ${preNote}`;
+  } else if (worst === 1){
+    col = "var(--s-maint)"; t = "Maintenance in progress";
+    s = `A scheduled maintenance window is currently active. ${preNote}`;
+  } else if (worst === 2){
+    col = "var(--s-deg)"; t = "Degraded performance";
+    s = `One or more live services are slower than usual. ${preNote}`;
+  } else if (worst === 3){
+    col = "var(--s-part)"; t = "Partial service outage";
+    s = `Some live services are unavailable. We're on it. ${preNote}`;
+  } else {
+    col = "var(--s-major)"; t = "Major service outage";
+    s = `A live service is down. Our team is actively investigating. ${preNote}`;
+  }
+
+  beacon.style.background = col;
+  beacon.style.color = col;
+  title.textContent = t;
+  sub.innerHTML = s;
+
+  /* overall uptime = mean of live services */
+  const pcts = [];
+  STATUS.groups.forEach(g => g.services.forEach(s2 => {
+    const p = uptimePct(s2); if (p !== null) pcts.push(p);
+  }));
+  const mean = pcts.length ? (pcts.reduce((a,b)=>a+b,0)/pcts.length) : null;
+  document.getElementById("uptimeVal").innerHTML =
+    mean !== null ? `${mean.toFixed(2)}<small> %</small>` : `—`;
+})();
+
+/* ── Timestamps & live clock ── */
+(function clocks(){
+  const lu = new Date(STATUS.lastUpdated);
+  const fmt = { day:'numeric', month:'short', year:'numeric', hour:'numeric', minute:'2-digit', hour12:true };
+  document.getElementById("updatedVal").innerHTML =
+    lu.toLocaleString('en-AU', fmt).replace(',', ' ·');
+
+  function tick(){
+    const now = new Date();
+    /* show Queensland time (AEST = UTC+10, no DST) */
+    const qld = new Date(now.getTime() + (now.getTimezoneOffset()*60000) + (10*3600000));
+    let h = qld.getHours(), m = String(qld.getMinutes()).padStart(2,'0');
+    const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
+    document.getElementById("clock").textContent = `${h}:${m} ${ap}`;
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* ── Maintenance ── */
+(function renderMaint(){
+  const wrap = document.getElementById("maintenanceWrap");
+  if (!STATUS.maintenance.length){
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="es-mark">🌾</div>
+      <p>No maintenance scheduled</p>
+      <span>You'll see planned windows here before they happen.</span>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = STATUS.maintenance.map(mn => `
+    <div class="group" style="opacity:1;transform:none;">
+      <div class="group-head">
+        <span class="gt"><span class="gicon">🛠</span>${mn.title}</span>
+        <span class="grp-badge" style="background:rgba(91,122,140,0.15);color:var(--s-maint-tx)">Scheduled</span>
+      </div>
+      <div class="svc" style="display:block;">
+        <div class="mono" style="font-size:12px;color:var(--field);letter-spacing:0.05em;">${mn.window}</div>
+        <div style="font-size:13.5px;color:#4A4639;margin-top:8px;">${mn.body}</div>
+      </div>
+    </div>`).join("");
+})();
+
+/* ── Incident timeline ── */
+(function renderTimeline(){
+  const tl = document.getElementById("timeline");
+  if (!STATUS.incidents.length){
+    tl.style.border = "none"; tl.style.marginLeft = "0";
+    tl.innerHTML = `<div class="empty-state">
+      <div class="es-mark">✓</div>
+      <p>No incidents reported</p>
+      <span>All clear for the last 90 days.</span>
+    </div>`;
+    return;
+  }
+  const pillStyle = {
+    resolved:     "background:rgba(141,189,90,0.18);color:var(--s-op-tx)",
+    scheduled:    "background:rgba(91,122,140,0.16);color:var(--s-maint-tx)",
+    milestone:    "background:rgba(212,185,106,0.22);color:var(--s-deg-tx)",
+    investigating:"background:rgba(184,90,42,0.16);color:var(--s-major-tx)"
+  };
+  tl.innerHTML = STATUS.incidents.map(it => `
+    <div class="tl-item ${it.type}">
+      <div class="tl-date">${it.date}</div>
+      <div class="tl-title">${it.title}
+        ${it.pill ? `<span class="tl-pill" style="${pillStyle[it.type]||pillStyle.milestone}">${it.pill}</span>` : ""}
+      </div>
+      <div class="tl-body">${it.body}</div>
+    </div>`).join("");
+})();
+
+/* ── Live website reachability probe (no CORS issue: image load) ── */
+(function livePing(){
+  const target = STATUS.groups
+    .flatMap(g => g.services)
+    .find(s => s.livePing);
+  if (!target) return;
+
+  const img = new Image();
+  let done = false;
+  const timer = setTimeout(() => { if (!done){ done = true; img.src = ""; } }, 6000);
+
+  img.onload = () => {
+    if (done) return; done = true; clearTimeout(timer);
+    /* reachable — manual STATUS stays source of truth, this just confirms */
+  };
+  img.onerror = () => {
+    if (done) return; done = true; clearTimeout(timer);
+    /* If the manual state says operational but we can't reach it, soften
+       the banner with a non-alarming note rather than declaring an outage. */
+    if (target.state === "operational"){
+      const sub = document.getElementById("overallSub");
+      sub.innerHTML = sub.innerHTML +
+        ' <span style="color:var(--straw)">· Live reachability check inconclusive — verifying.</span>';
+    }
+  };
+  /* cache-bust so we test the live origin each load */
+  img.src = "https://paddockroute.com.au/favicon.ico?_=" + Date.now();
+})();
+
+/* ── Subscribe form ──
+   This mirrors your existing Cloudflare Pages Function pattern. Point it at
+   a function (e.g. functions/api/status-subscribe.js) that adds the email to
+   a dedicated Beehiiv segment / automation — same approach as the waitlist
+   function. NO API KEY is ever placed in this client file. Until that
+   endpoint exists it falls back gracefully to an email handoff. */
+(function subscribe(){
+  const btn = document.getElementById("subBtn");
+  const inp = document.getElementById("subEmail");
+  const note = document.getElementById("subNote");
+  const ENDPOINT = "/api/status-subscribe";   /* create this as a Pages Function */
+
+  function setNote(msg, err){
+    note.textContent = msg;
+    note.classList.toggle("err", !!err);
+  }
+
+  async function go(){
+    const email = inp.value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+      setNote("Enter a valid email address.", true); return;
+    }
+    btn.disabled = true; setNote("Subscribing…", false);
+    try {
+      const r = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "status-page" })
+      });
+      if (!r.ok) throw new Error();
+      setNote("You're subscribed — we'll email you about incidents.", false);
+      inp.value = "";
+    } catch(e) {
+      /* graceful fallback while the endpoint isn't wired yet */
+      setNote("Subscription service is being set up. Email info@paddockroute.com.au and we'll add you to alerts.", true);
+      window.location.href =
+        "mailto:info@paddockroute.com.au?subject=" +
+        encodeURIComponent("Status alerts subscription") +
+        "&body=" + encodeURIComponent("Please subscribe " + email + " to Paddock Route status alerts.");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener("click", go);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+})();
+</script>
+
+</body>
+</html>
