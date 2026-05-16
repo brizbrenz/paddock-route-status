@@ -564,17 +564,13 @@
      resolved [data-theme="dark"] state. */
 </style>
 <script>
-  /* Set theme before first paint to avoid a flash. Preference order:
-     saved choice → OS setting → light. localStorage is wrapped in
-     try/catch so a storage-blocked context can never throw. */
+  /* Set theme before first paint to avoid a flash. Dark is the default;
+     it is only overridden by an explicit saved choice. localStorage is
+     wrapped in try/catch so a storage-blocked context can never throw. */
   (function(){
     var t = null;
     try { t = localStorage.getItem("pr-status-theme"); } catch(e){}
-    if (t !== "dark" && t !== "light"){
-      t = (window.matchMedia &&
-           window.matchMedia("(prefers-color-scheme: dark)").matches)
-          ? "dark" : "light";
-    }
+    if (t !== "dark" && t !== "light") t = "dark";   /* default */
     document.documentElement.setAttribute("data-theme", t);
   })();
 </script>
@@ -1400,15 +1396,6 @@ paintBanner();
     paint(next);
     try { localStorage.setItem(KEY, next); } catch(e){}
   });
-
-  /* Follow OS changes only while the visitor hasn't set an explicit choice */
-  if (window.matchMedia){
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
-      let saved = null;
-      try { saved = localStorage.getItem(KEY); } catch(_){}
-      if (saved !== "dark" && saved !== "light") paint(e.matches ? "dark" : "light");
-    });
-  }
 })();
 </script>
 
