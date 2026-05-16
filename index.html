@@ -639,7 +639,7 @@
    but never count as a problem (they're roadmap, not downtime).
 
    LIVE REACHABILITY: any service given a "probe" URL is checked in-browser
-   by loading that URL as an image (no CORS issue). Checks run on load,
+   by sending a lightweight no-cors request to that URL. Checks run on load,
    whenever the tab regains focus, and on a self-adjusting cadence: every
    60s while everything is green, speeding up to every 12s while anything
    looks unhealthy (faster detection and faster recovery). Each probed
@@ -652,8 +652,10 @@
    NOT paper over it.
 
    To add a live check to a future service (e.g. the API once it launches),
-   give it a "probe" pointing at any always-200 asset on that origin — a
-   favicon, a /health.png, a 1px gif — and flip its state off "prelaunch".
+   give it a "probe" URL on that origin that responds to a request (the
+   site root or a /health endpoint is ideal) and flip its state off
+   "prelaunch". The probe only needs the origin to answer — it does not
+   need a specific file, image, or a 200 status.
    ═══════════════════════════════════════════════════════════════════════ */
 
 const STATUS = {
@@ -672,7 +674,7 @@ const STATUS = {
           tag: "paddockroute.com.au",
           desc: "Public site, waitlist, content pages.",
           state: "operational",
-          probe: "https://paddockroute.com.au/favicon.ico"   /* live reachability */
+          probe: "https://paddockroute.com.au/"   /* live reachability */
         },
         {
           name: "Waitlist & sign-ups",
@@ -729,7 +731,7 @@ const STATUS = {
           tag: "paddockroute.online",
           desc: "This status page and its delivery edge.",
           state: "operational",
-          probe: "https://paddockroute.online/favicon.ico"
+          probe: "https://paddockroute.online/"
         },
         {
           name: "Payments",
@@ -1050,7 +1052,7 @@ paintBanner();
 })();
 
 /* ── Live reachability engine ──────────────────────────────────────────
-   Cross-origin-safe image-load probe. Runs on load, every 60s, on tab
+   No-cors fetch reachability probe. Runs on load, every 60s, on tab
    focus, and when the network comes back. A service must fail TWICE in a
    row before it's flagged (one transient blip never trips a false alarm).
    Manual STATUS still wins worst-case — a passing probe can't hide a
@@ -1067,16 +1069,26 @@ paintBanner();
   }));
   if (!targets.length) return;
 
+  /* Reachability probe: a no-cors fetch to the origin. It RESOLVES if the
+     server responded at all (opaque response, any status) and REJECTS only
+     on a genuine network failure — DNS failure, refused connection, TLS
+     error, or our timeout. No dependency on any specific file existing.
+     Note: an opaque response hides the HTTP status, so this confirms "the
+     origin is reachable", not "every page is 200" — manual STATUS remains
+     the source of truth for real incident states. */
   function probeOne(t){
-    return new Promise(resolve => {
-      const img = new Image();
-      let done = false;
-      const to = setTimeout(() => { if(!done){ done = true; img.src = ""; resolve(false); } }, PROBE_TIMEOUT);
-      img.onload  = () => { if(!done){ done = true; clearTimeout(to); resolve(true);  } };
-      img.onerror = () => { if(!done){ done = true; clearTimeout(to); resolve(false); } };
-      const sep = t.s.probe.includes("?") ? "&" : "?";
-      img.src = t.s.probe + sep + "_=" + Date.now();   /* cache-bust */
-    });
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT);
+    const sep = t.s.probe.includes("?") ? "&" : "?";
+    return fetch(t.s.probe + sep + "_=" + Date.now(), {
+      mode: "no-cors",
+      cache: "no-store",
+      redirect: "follow",
+      signal: ctrl.signal
+    })
+    .then(() => true)
+    .catch(() => false)
+    .finally(() => clearTimeout(to));
   }
 
   function setChip(t){
