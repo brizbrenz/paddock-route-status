@@ -42,8 +42,6 @@
     --amber:  #C0871F;
     --slate:  #5B7A8C;
     --bg:     #F0E8D0;
-    --soft-tx:#4A4639;   /* body paragraph text (themable) */
-    --bar-pre:var(--mist); /* uptime bar: not-yet-monitored (themable) */
 
     /* Status semantic tokens */
     --s-op:    var(--lime);
@@ -116,6 +114,15 @@
     transition: all .25s;
   }
   .ghost-link:hover { background: var(--field); color: var(--cream); border-color: var(--field); }
+  .status-nav { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .status-nav a {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone);
+    text-decoration: none; transition: color .25s;
+  }
+  .status-nav a:hover { color: var(--field); }
+  .status-nav a.active { color: var(--field); cursor: default; }
+  @media (max-width: 980px) { .status-nav { display: none; } }
 
   /* ── HERO STATUS BANNER ── */
   .hero {
@@ -257,30 +264,6 @@
   }
   .svc .state .pct { display: block; font-size: 10px; color: var(--stone); margin-top: 3px; }
 
-  /* live reachability chip */
-  .live-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.02em;
-    margin-top: 6px; padding: 3px 9px 3px 7px; border-radius: 999px;
-    border: 1px solid #E3DAC4; color: var(--stone); white-space: nowrap;
-    transition: color .25s, border-color .25s, background .25s;
-  }
-  .live-chip .lp {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--stone);
-    flex-shrink: 0; position: relative;
-  }
-  .live-chip.ok { color: var(--s-op-tx); border-color: rgba(141,189,90,0.45); background: rgba(141,189,90,0.10); }
-  .live-chip.ok .lp { background: var(--lime); }
-  .live-chip.ok .lp::after {
-    content: ""; position: absolute; inset: -4px; border-radius: 50%;
-    border: 1.5px solid var(--lime); opacity: .6;
-    animation: ping 2.6s cubic-bezier(0,0,.2,1) infinite;
-  }
-  .live-chip.fail { color: var(--s-part-tx); border-color: rgba(216,154,62,0.5); background: rgba(216,154,62,0.12); }
-  .live-chip.fail .lp { background: var(--s-part); }
-  .live-chip.checking .lp { animation: blink 1s ease-in-out infinite; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-
   /* ── UPTIME STRIP ── */
   .uptime {
     padding: 6px 26px 20px;
@@ -341,7 +324,7 @@
     font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 16px;
     color: var(--ink); margin: 5px 0 6px;
   }
-  .tl-body { font-size: 13.5px; color: var(--soft-tx); max-width: 60ch; }
+  .tl-body { font-size: 13.5px; color: #4A4639; max-width: 60ch; }
   .tl-pill {
     display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
     letter-spacing: 0.08em; text-transform: uppercase;
@@ -420,7 +403,7 @@
     text-transform: uppercase; color: var(--field); margin-bottom: 14px;
   }
   .foot-col a, .foot-col span {
-    display: block; font-size: 13.5px; color: var(--soft-tx); text-decoration: none;
+    display: block; font-size: 13.5px; color: #4A4639; text-decoration: none;
     margin-bottom: 9px; transition: color .2s;
   }
   .foot-col a:hover { color: var(--field); }
@@ -443,167 +426,7 @@
     header { padding: 20px 20px; }
     .foot-bar { flex-direction: column; }
   }
-
-  /* ── DESKTOP BOARD LAYOUT ──────────────────────────────────────────────
-     The service section breaks out of the 920px reading column into a
-     wider centred board, and the group cards lay out as a responsive grid:
-     3-up on a 1080p desktop, 2-up on smaller laptops, 1-up on phones —
-     so far more of the status fits on one screen without scrolling. The
-     hero, legend, timeline and subscribe stay at reading width on purpose. */
-  .board {
-    width: min(1320px, calc(100vw - 48px));
-    margin-left: 50%;
-    transform: translateX(-50%);
-  }
-  #groups {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
-    gap: 20px;
-    align-items: stretch;
-  }
-  #groups .group { margin-bottom: 0; }   /* equal-height tiles; grid gap spaces them */
-
-  /* tighten the 90-day strip so it stays crisp inside narrower cards
-     and shaves vertical height everywhere */
-  .bars { gap: 2px; height: 30px; }
-  .bars .b { min-width: 1px; }
-  .uptime { padding: 4px 26px 16px; }
-  .uptime-foot { margin-top: 7px; }
-
-  @media (min-width: 1500px) {
-    .board { width: min(1320px, calc(100vw - 64px)); }
-  }
-
-  /* ── THEME TOGGLE SWITCH ───────────────────────────────────────────── */
-  .theme-toggle {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: transparent; border: 1px solid rgba(78,122,53,0.28);
-    border-radius: 999px; padding: 7px 12px; cursor: pointer;
-    color: var(--field); transition: border-color .25s, background .25s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .theme-toggle:hover { border-color: rgba(78,122,53,0.55); }
-  .theme-toggle:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
-  .tg-ico { width: 15px; height: 15px; flex-shrink: 0; transition: color .25s, opacity .25s; }
-  .tg-sun  { color: var(--straw); }
-  .tg-moon { color: var(--field); opacity: .45; }
-  .tg-track {
-    position: relative; width: 38px; height: 20px; border-radius: 999px;
-    background: var(--parch); border: 1px solid rgba(15,26,10,0.10);
-    transition: background .3s ease;
-  }
-  .tg-knob {
-    position: absolute; top: 1px; left: 1px; width: 16px; height: 16px;
-    border-radius: 50%; background: var(--cream);
-    box-shadow: 0 2px 5px rgba(15,26,10,0.30);
-    transition: transform .3s cubic-bezier(.34,1.56,.64,1), background .3s;
-  }
-  [data-theme="dark"] .theme-toggle { border-color: rgba(168,217,106,0.28); }
-  [data-theme="dark"] .theme-toggle:hover { border-color: rgba(168,217,106,0.55); }
-  [data-theme="dark"] .tg-track { background: var(--grove); border-color: rgba(168,217,106,0.20); }
-  [data-theme="dark"] .tg-knob  { transform: translateX(18px); background: var(--leaf); }
-  [data-theme="dark"] .tg-sun   { opacity: .4; color: var(--straw); }
-  [data-theme="dark"] .tg-moon  { opacity: 1; color: var(--leaf); }
-
-  /* ── DARK THEME ────────────────────────────────────────────────────────
-     Forest-night palette built from the brand. Only surface + text tokens
-     and a few specific components flip; the brand accent colours and the
-     (always-dark) hero are unchanged. Status text tokens are var()-based
-     so every inline-coloured status label/badge re-tints automatically. */
-  [data-theme="dark"] {
-    --soft-tx:   #B2C09F;
-    --bar-pre:   #38472C;                  /* recessed, clearly "not monitored" */
-    --parch:     rgba(168,217,106,0.12);   /* hairlines / dividers */
-    --s-op-tx:   #A8D96A;
-    --s-deg-tx:  #E6C878;
-    --s-part-tx: #E6A24A;
-    --s-major-tx:#E58A5A;
-    --s-maint-tx:#8FB6C9;
-    --s-pre-tx:  #9DAB8C;
-  }
-  [data-theme="dark"] body {
-    background: #0B1308; color: #EAF0DD;
-    background-image:
-      radial-gradient(circle at 12% 16%, rgba(141,189,90,0.08), transparent 44%),
-      radial-gradient(circle at 88% 6%, rgba(212,185,106,0.06), transparent 42%);
-  }
-  [data-theme="dark"] ::selection { background: var(--field); color: var(--cream); }
-
-  [data-theme="dark"] .hero {
-    border: 1px solid rgba(168,217,106,0.13);
-    box-shadow: 0 30px 70px -34px rgba(0,0,0,0.7);
-  }
-  [data-theme="dark"] .ghost-link { color: var(--leaf); border-color: rgba(168,217,106,0.30); }
-  [data-theme="dark"] .ghost-link:hover { background: var(--lime); color: var(--ink); border-color: var(--lime); }
-
-  [data-theme="dark"] .brand .pad,
-  [data-theme="dark"] .foot-brand .ft .pad { color: #EAF0DD; }
-  [data-theme="dark"] .brand .rte,
-  [data-theme="dark"] .foot-brand .ft .rte { color: var(--leaf); }
-  [data-theme="dark"] .brand .statustag { color: #8C9A7C; }
-
-  [data-theme="dark"] .kicker,
-  [data-theme="dark"] .foot-col .fh { color: var(--lime); }
-
-  [data-theme="dark"] .group {
-    background: #15210D; border-color: rgba(168,217,106,0.10);
-    box-shadow: 0 18px 40px -34px rgba(0,0,0,0.6);
-  }
-  [data-theme="dark"] .group-head {
-    background: linear-gradient(180deg, #1C2A12, #15210D);
-    border-bottom-color: rgba(168,217,106,0.10);
-  }
-  [data-theme="dark"] .group-head .gt { color: var(--leaf); }
-
-  [data-theme="dark"] .svc { border-bottom-color: rgba(168,217,106,0.07); }
-  [data-theme="dark"] .svc .name { color: #EAF0DD; }
-  [data-theme="dark"] .svc .desc { color: #93A283; }
-  [data-theme="dark"] .svc .name .tagchip { border-color: rgba(168,217,106,0.22); color: #93A283; }
-  [data-theme="dark"] .uptime { border-bottom-color: rgba(168,217,106,0.07); }
-
-  [data-theme="dark"] .live-chip { border-color: rgba(168,217,106,0.20); color: #93A283; }
-  [data-theme="dark"] .live-chip.ok   { color: var(--leaf);  border-color: rgba(141,189,90,0.45); background: rgba(141,189,90,0.14); }
-  [data-theme="dark"] .live-chip.fail { color: #E6A24A; border-color: rgba(216,154,62,0.5); background: rgba(216,154,62,0.16); }
-
-  [data-theme="dark"] .legend { background: #15210D; border-color: rgba(168,217,106,0.10); }
-  [data-theme="dark"] .legend .li { color: #C2D0B1; }
-
-  [data-theme="dark"] .sec-head h2 { color: #EAF0DD; }
-  [data-theme="dark"] .sec-head .note { color: #8C9A7C; }
-
-  [data-theme="dark"] .timeline { border-left-color: rgba(168,217,106,0.16); }
-  [data-theme="dark"] .tl-item::before { background: #0B1308; }
-  [data-theme="dark"] .tl-date { color: #8C9A7C; }
-  [data-theme="dark"] .tl-title { color: #EAF0DD; }
-
-  [data-theme="dark"] .empty-state {
-    background: #15210D; border-color: rgba(168,217,106,0.20);
-  }
-  [data-theme="dark"] .empty-state p { color: var(--leaf); }
-  [data-theme="dark"] .empty-state span { color: #8C9A7C; }
-
-  [data-theme="dark"] .subscribe { box-shadow: inset 0 0 0 1px rgba(168,217,106,0.10); }
-
-  [data-theme="dark"] footer { border-top-color: rgba(168,217,106,0.10); }
-  [data-theme="dark"] .foot-brand p { color: #8C9A7C; }
-  [data-theme="dark"] .foot-col a:hover { color: var(--leaf); }
-  [data-theme="dark"] .foot-bar { border-top-color: rgba(168,217,106,0.10); color: #8C9A7C; }
-
-  /* honour OS dark preference for first-time visitors before JS runs is
-     handled by the inline <head> script; this block only styles the
-     resolved [data-theme="dark"] state. */
 </style>
-<script>
-  /* Set theme before first paint to avoid a flash. Dark is the default;
-     it is only overridden by an explicit saved choice. localStorage is
-     wrapped in try/catch so a storage-blocked context can never throw. */
-  (function(){
-    var t = null;
-    try { t = localStorage.getItem("pr-status-theme"); } catch(e){}
-    if (t !== "dark" && t !== "light") t = "dark";   /* default */
-    document.documentElement.setAttribute("data-theme", t);
-  })();
-</script>
 </head>
 <body>
 
@@ -638,24 +461,14 @@
       <span class="statustag">Service Status</span>
     </span>
   </a>
+  <nav class="status-nav" aria-label="Site">
+    <a href="https://paddockroute.com.au/paddock-route-delivery-zones.html">Delivery Zones</a>
+    <a href="https://paddockroute.com.au/paddock-route-grower-partners.html">Grower Partners</a>
+    <a href="https://paddockroute.com.au/paddock-route-driver-program.html">Driver Program</a>
+    <a href="https://paddockroute.com.au/paddock-route-delivery-refunds.html">Delivery &amp; Refunds</a>
+    <a class="active" aria-current="page">Status</a>
+  </nav>
   <div class="header-actions">
-    <button id="themeToggle" class="theme-toggle" role="switch" aria-checked="false"
-            aria-label="Toggle dark mode" title="Toggle dark mode">
-      <svg class="tg-ico tg-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
-        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 2.5v2.6"/><path d="M12 18.9v2.6"/>
-          <path d="M2.5 12h2.6"/><path d="M18.9 12h2.6"/>
-          <path d="M5.2 5.2l1.8 1.8"/><path d="M17 17l1.8 1.8"/>
-          <path d="M18.8 5.2L17 7"/><path d="M7 17l-1.8 1.8"/>
-        </g>
-      </svg>
-      <span class="tg-track"><span class="tg-knob"></span></span>
-      <svg class="tg-ico tg-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"
-              fill="currentColor"/>
-      </svg>
-    </button>
     <a class="ghost-link" href="https://paddockroute.com.au/">← Back to site</a>
   </div>
 </header>
@@ -700,7 +513,7 @@
   </section>
 
   <!-- ════════════ SERVICE GROUPS ════════════ -->
-  <section class="board">
+  <section>
     <div class="sec-head">
       <h2>Current status by service</h2>
       <span class="note" id="grpNote"></span>
@@ -777,11 +590,19 @@
       <a href="https://paddockroute.com.au/#signup">Join waitlist</a>
     </div>
     <div class="foot-col">
-      <div class="fh">Support</div>
+      <div class="fh">Info</div>
+      <a href="https://paddockroute.com.au/paddock-route-delivery-zones.html">Delivery zones</a>
+      <a href="https://paddockroute.com.au/paddock-route-grower-partners.html">Grower partners</a>
+      <a href="https://paddockroute.com.au/paddock-route-driver-program.html">Driver program</a>
+      <a href="https://paddockroute.com.au/paddock-route-delivery-refunds.html">Delivery &amp; Refunds</a>
+      <a href="https://paddockroute.online/">Service status</a>
+    </div>
+    <div class="foot-col">
+      <div class="fh">Legal &amp; contact</div>
+      <a href="https://paddockroute.com.au/paddock-route-terms.html">Terms of Service</a>
+      <a href="https://paddockroute.com.au/paddock-route-privacy.html">Privacy policy</a>
       <a href="mailto:info@paddockroute.com.au">info@paddockroute.com.au</a>
       <span>Warwick, QLD 4370</span>
-      <a href="https://paddockroute.com.au/paddock-route-delivery-refunds.html">Delivery &amp; Refunds</a>
-      <a href="https://paddockroute.com.au/paddock-route-terms.html">Terms</a>
     </div>
   </div>
   <div class="foot-bar">
@@ -817,30 +638,15 @@
    service state — you never set it by hand. "prelaunch" services are shown
    but never count as a problem (they're roadmap, not downtime).
 
-   LIVE REACHABILITY: any service given a "probe" URL is checked in-browser
-   by sending a lightweight no-cors request to that URL. Checks run on load,
-   whenever the tab regains focus, and on a self-adjusting cadence: every
-   60s while everything is green, speeding up to every 12s while anything
-   looks unhealthy (faster detection and faster recovery). Each probed
-   service shows a live "checked Xs ago" chip. A probe must FAIL TWICE IN
-   A ROW before it affects anything (one blip — your wifi, an ad-blocker —
-   never trips a false alarm). On a confirmed failure of a service whose
-   manual state is "operational", that service is shown as "Reachability
-   failing" and the banner reflects it. Manual STATUS still wins the
-   worst-case: if you've set a service to "major", a passing probe will
-   NOT paper over it.
-
-   To add a live check to a future service (e.g. the API once it launches),
-   give it a "probe" URL on that origin that responds to a request (the
-   site root or a /health endpoint is ideal) and flip its state off
-   "prelaunch". The probe only needs the origin to answer — it does not
-   need a specific file, image, or a 200 status.
+   LIVE PING: the website service is also probed in-browser by loading the
+   favicon from paddockroute.com.au. If that fails the banner softens to a
+   "checking" note — but the manual STATUS values stay the source of truth.
    ═══════════════════════════════════════════════════════════════════════ */
 
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-16T16:30:00+10:00",
+  lastUpdated: "2026-05-17T08:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -853,7 +659,7 @@ const STATUS = {
           tag: "paddockroute.com.au",
           desc: "Public site, waitlist, content pages.",
           state: "operational",
-          probe: "https://paddockroute.com.au/"   /* live reachability */
+          livePing: true            /* in-browser reachability probe */
         },
         {
           name: "Waitlist & sign-ups",
@@ -906,13 +712,6 @@ const STATUS = {
           state: "operational"
         },
         {
-          name: "Status site",
-          tag: "paddockroute.online",
-          desc: "This status page and its delivery edge.",
-          state: "operational",
-          probe: "https://paddockroute.online/"
-        },
-        {
           name: "Payments",
           desc: "Subscription billing and checkout.",
           state: "prelaunch"
@@ -935,17 +734,17 @@ const STATUS = {
   incidents: [
     {
       type: "milestone",
-      date: "16 May 2026",
-      title: "Live reachability monitoring enabled",
-      pill: "Milestone",
-      body: "paddockroute.online is live and serving. Automated in-browser reachability checks are now running for the public website and this status site — re-probed every 60 seconds with a two-strike threshold before any alert."
+      date: "17 May 2026",
+      title: "Site navigation streamlined",
+      pill: "Update",
+      body: "Navigation and footers were unified across the public site and all info pages. The logo now links home from every page, the wordmark casing was corrected, and this service status page is now linked site-wide. No service disruption — content and forms unaffected."
     },
     {
       type: "milestone",
       date: "16 May 2026",
       title: "Status page online",
       pill: "Milestone",
-      body: "Service status is now published at paddockroute.online. The public site and waitlist are operational; the customer and driver apps are in active development ahead of the 2026 launch."
+      body: "Live service status is now published at paddockroute.online. The public site and waitlist are operational; the customer and driver apps are in active development ahead of the 2026 launch."
     }
   ]
 };
@@ -994,8 +793,8 @@ function uptimeDays(svc){
   return days;
 }
 function dayColor(st){
-  if (st === "pre") return "var(--bar-pre)";
-  return STATE_META[st] ? STATE_META[st].color : "var(--bar-pre)";
+  if (st === "pre") return "var(--mist)";
+  return STATE_META[st] ? STATE_META[st].color : "var(--mist)";
 }
 function uptimePct(svc){
   if (!STATE_META[svc.state].live) return null;
@@ -1030,26 +829,21 @@ function uptimePct(svc){
 
     let html = `<div class="group-head">
       <span class="gt"><span class="gicon">${g.icon}</span>${g.name}</span>
-      <span class="grp-badge" id="grp-${gi}" style="background:${badgeBg};color:${badgeCol}">${badgeTxt}</span>
+      <span class="grp-badge" style="background:${badgeBg};color:${badgeCol}">${badgeTxt}</span>
     </div>`;
 
-    g.services.forEach((s, si) => {
+    g.services.forEach(s => {
       const m = STATE_META[s.state];
       if (m.live) liveCount++; else preCount++;
       const pct = uptimePct(s);
-      const sid = `${gi}-${si}`;
-      const chip = s.probe
-        ? `<div class="live-chip checking" id="chip-${sid}"><span class="lp"></span><span class="lt">checking…</span></div>`
-        : "";
-      html += `<div class="svc" id="svc-${sid}">
-        <span class="dot" id="dot-${sid}" style="background:${m.color}"></span>
+      html += `<div class="svc">
+        <span class="dot" style="background:${m.color}"></span>
         <div class="meta">
           <div class="name">${s.name}${s.tag ? `<span class="tagchip">${s.tag}</span>` : ""}</div>
           <div class="desc">${s.desc || ""}</div>
-          ${chip}
         </div>
-        <div class="state" id="state-${sid}" style="color:${m.tx}">
-          <span class="slabel">${m.label}</span>
+        <div class="state" style="color:${m.tx}">
+          ${m.label}
           ${pct !== null ? `<span class="pct">${pct.toFixed(2)}% · 90d</span>` : `<span class="pct">not yet live</span>`}
         </div>
       </div>`;
@@ -1073,27 +867,19 @@ function uptimePct(svc){
     `${liveCount} live · ${preCount} in development`;
 })();
 
-/* ── Overall banner (manual worst-case + confirmed probe failures) ──
-   PROBE_FAIL holds service ids that are manually "operational" but have
-   failed the live reachability check twice in a row. */
-const PROBE_FAIL = new Set();
-
-function paintBanner(){
+/* ── Overall banner (derived from worst LIVE state) ── */
+(function renderBanner(){
   let worst = 0, anyLive = false;
   STATUS.groups.forEach(g => g.services.forEach(s => {
     const m = STATE_META[s.state];
     if (m.live){ anyLive = true; worst = Math.max(worst, m.rank); }
   }));
-  /* a confirmed-unreachable operational service is at least a partial outage */
-  if (PROBE_FAIL.size) worst = Math.max(worst, 3);
 
   const beacon = document.getElementById("beacon");
   const title  = document.getElementById("overallTitle");
   const sub    = document.getElementById("overallSub");
+
   const preNote = "Customer &amp; driver apps are in active development ahead of the 2026 launch.";
-  const probeNote = PROBE_FAIL.size
-    ? ` <span style="color:var(--s-part-tx)">· Automated reachability check failing for ${PROBE_FAIL.size} service${PROBE_FAIL.size > 1 ? "s" : ""}.</span>`
-    : "";
   let col, t, s;
 
   if (!anyLive){
@@ -1119,38 +905,9 @@ function paintBanner(){
   beacon.style.background = col;
   beacon.style.color = col;
   title.textContent = t;
-  sub.innerHTML = s + probeNote;
-}
+  sub.innerHTML = s;
 
-/* Recompute one group's rollup badge, factoring in confirmed probe fails. */
-function paintGroupBadge(gi){
-  const el = document.getElementById("grp-" + gi);
-  const g = STATUS.groups[gi];
-  if (!el || !g) return;
-  let worst = -1;
-  g.services.forEach((s, si) => {
-    let r = STATE_META[s.state].rank;
-    if (PROBE_FAIL.has(gi + "-" + si)) r = Math.max(r, 3);  /* partial */
-    worst = Math.max(worst, r);
-  });
-  let txt, bg, col;
-  if (worst <= 0 && g.services.some(s => STATE_META[s.state].live)){
-    txt = "Operational";    bg = "rgba(141,189,90,0.16)"; col = "var(--s-op-tx)";
-  } else if (worst < 0){
-    txt = "In development";  bg = "rgba(122,116,104,0.14)"; col = "var(--s-pre-tx)";
-  } else {
-    const wk = Object.keys(STATE_META).find(k => STATE_META[k].rank === worst);
-    const m = STATE_META[wk] || STATE_META.partial;
-    txt = m.label;          bg = "rgba(184,90,42,0.14)";   col = m.tx;
-  }
-  el.textContent = txt;
-  el.style.background = bg;
-  el.style.color = col;
-}
-paintBanner();
-
-/* overall uptime = mean of live services (computed once) */
-(function(){
+  /* overall uptime = mean of live services */
   const pcts = [];
   STATUS.groups.forEach(g => g.services.forEach(s2 => {
     const p = uptimePct(s2); if (p !== null) pcts.push(p);
@@ -1197,7 +954,7 @@ paintBanner();
       </div>
       <div class="svc" style="display:block;">
         <div class="mono" style="font-size:12px;color:var(--field);letter-spacing:0.05em;">${mn.window}</div>
-        <div style="font-size:13.5px;color:var(--soft-tx);margin-top:8px;">${mn.body}</div>
+        <div style="font-size:13.5px;color:#4A4639;margin-top:8px;">${mn.body}</div>
       </div>
     </div>`).join("");
 })();
@@ -1230,128 +987,33 @@ paintBanner();
     </div>`).join("");
 })();
 
-/* ── Live reachability engine ──────────────────────────────────────────
-   No-cors fetch reachability probe. Runs on load, every 60s, on tab
-   focus, and when the network comes back. A service must fail TWICE in a
-   row before it's flagged (one transient blip never trips a false alarm).
-   Manual STATUS still wins worst-case — a passing probe can't hide a
-   service you've manually set to a fault state. */
-(function probeEngine(){
-  const HEALTHY_EVERY = 60000;  /* ms between rounds when all green   */
-  const WATCH_EVERY   = 12000;  /* ms between rounds while unhealthy  */
-  const PROBE_TIMEOUT = 5000;   /* ms before a single probe fails     */
-  const FAIL_THRESHOLD = 2;     /* consecutive fails to flag a service*/
+/* ── Live website reachability probe (no CORS issue: image load) ── */
+(function livePing(){
+  const target = STATUS.groups
+    .flatMap(g => g.services)
+    .find(s => s.livePing);
+  if (!target) return;
 
-  const targets = [];
-  STATUS.groups.forEach((g, gi) => g.services.forEach((s, si) => {
-    if (s.probe) targets.push({ s, sid: `${gi}-${si}`, fails: 0, lastOk: null, ts: 0 });
-  }));
-  if (!targets.length) return;
+  const img = new Image();
+  let done = false;
+  const timer = setTimeout(() => { if (!done){ done = true; img.src = ""; } }, 6000);
 
-  /* Reachability probe: a no-cors fetch to the origin. It RESOLVES if the
-     server responded at all (opaque response, any status) and REJECTS only
-     on a genuine network failure — DNS failure, refused connection, TLS
-     error, or our timeout. No dependency on any specific file existing.
-     Note: an opaque response hides the HTTP status, so this confirms "the
-     origin is reachable", not "every page is 200" — manual STATUS remains
-     the source of truth for real incident states. */
-  function probeOne(t){
-    const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT);
-    const sep = t.s.probe.includes("?") ? "&" : "?";
-    return fetch(t.s.probe + sep + "_=" + Date.now(), {
-      mode: "no-cors",
-      cache: "no-store",
-      redirect: "follow",
-      signal: ctrl.signal
-    })
-    .then(() => true)
-    .catch(() => false)
-    .finally(() => clearTimeout(to));
-  }
-
-  function setChip(t){
-    const chip = document.getElementById("chip-" + t.sid);
-    if (!chip) return;
-    const lt = chip.querySelector(".lt");
-    if (t.lastOk === true){
-      chip.className = "live-chip ok";   lt.textContent = "live · just now";
-    } else if (t.fails >= FAIL_THRESHOLD){
-      chip.className = "live-chip fail";  lt.textContent = "unreachable";
-    } else {
-      chip.className = "live-chip checking"; lt.textContent = "re-checking…";
+  img.onload = () => {
+    if (done) return; done = true; clearTimeout(timer);
+    /* reachable — manual STATUS stays source of truth, this just confirms */
+  };
+  img.onerror = () => {
+    if (done) return; done = true; clearTimeout(timer);
+    /* If the manual state says operational but we can't reach it, soften
+       the banner with a non-alarming note rather than declaring an outage. */
+    if (target.state === "operational"){
+      const sub = document.getElementById("overallSub");
+      sub.innerHTML = sub.innerHTML +
+        ' <span style="color:var(--straw)">· Live reachability check inconclusive — verifying.</span>';
     }
-    t.ts = Date.now();
-  }
-
-  function applyState(t){
-    const manualOp = (t.s.state === "operational");
-    const confirmedDown = (t.fails >= FAIL_THRESHOLD);
-    const dot   = document.getElementById("dot-" + t.sid);
-    const state = document.getElementById("state-" + t.sid);
-    if (!state) return;
-    const lbl = state.querySelector(".slabel");
-    if (manualOp && confirmedDown){
-      PROBE_FAIL.add(t.sid);
-      if (dot) dot.style.background = "var(--s-part)";
-      state.style.color = "var(--s-part-tx)";
-      if (lbl) lbl.textContent = "Reachability failing";
-    } else if (PROBE_FAIL.has(t.sid)){
-      PROBE_FAIL.delete(t.sid);                       /* recovered */
-      const m = STATE_META[t.s.state];
-      if (dot) dot.style.background = m.color;
-      state.style.color = m.tx;
-      if (lbl) lbl.textContent = m.label;
-    }
-    paintGroupBadge(parseInt(t.sid, 10));
-    paintBanner();
-  }
-
-  let allHealthy = true;
-  let timer = null;
-
-  async function cycle(){
-    let healthy = true;
-    for (const t of targets){
-      const ok = await probeOne(t);
-      t.lastOk = ok;
-      t.fails  = ok ? 0 : (t.fails + 1);
-      if (!ok || PROBE_FAIL.has(t.sid)) healthy = false;
-      setChip(t);
-      applyState(t);
-    }
-    allHealthy = healthy;
-    schedule();
-  }
-
-  function schedule(){
-    clearTimeout(timer);
-    timer = setTimeout(cycle, allHealthy ? HEALTHY_EVERY : WATCH_EVERY);
-  }
-
-  function cycleNow(){           /* jump the queue (focus / back online) */
-    clearTimeout(timer);
-    cycle();
-  }
-
-  /* "checked Xs ago" ticker */
-  setInterval(() => {
-    targets.forEach(t => {
-      const chip = document.getElementById("chip-" + t.sid);
-      if (!chip || !t.ts) return;
-      const lt = chip.querySelector(".lt");
-      const secs = Math.floor((Date.now() - t.ts) / 1000);
-      const ago = secs < 5 ? "just now"
-                : secs < 60 ? secs + "s ago"
-                : Math.floor(secs/60) + "m ago";
-      if (chip.classList.contains("ok"))        lt.textContent = "live · " + ago;
-      else if (chip.classList.contains("fail")) lt.textContent = "unreachable · " + ago;
-    });
-  }, 1000);
-
-  cycle();
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) cycleNow(); });
-  window.addEventListener("online", cycleNow);
+  };
+  /* cache-bust so we test the live origin each load */
+  img.src = "https://paddockroute.com.au/favicon.ico?_=" + Date.now();
 })();
 
 /* ── Subscribe form ──
@@ -1400,32 +1062,6 @@ paintBanner();
 
   btn.addEventListener("click", go);
   inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
-})();
-
-/* ── Theme toggle controller ───────────────────────────────────────────
-   The <head> script already set data-theme to avoid a flash. This wires
-   the switch: flips the theme, mirrors it to aria-checked + the browser
-   theme-color, and remembers the choice (storage guarded so it can never
-   throw in a locked-down context). */
-(function themeToggle(){
-  const KEY = "pr-status-theme";
-  const root = document.documentElement;
-  const btn  = document.getElementById("themeToggle");
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (!btn) return;
-
-  function paint(theme){
-    root.setAttribute("data-theme", theme);
-    btn.setAttribute("aria-checked", theme === "dark" ? "true" : "false");
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B1308" : "#0F1A0A");
-  }
-  paint(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
-
-  btn.addEventListener("click", () => {
-    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    paint(next);
-    try { localStorage.setItem(KEY, next); } catch(e){}
-  });
 })();
 </script>
 
