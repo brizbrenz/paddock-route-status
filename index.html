@@ -646,6 +646,9 @@
   </section>
 
   <!-- ════════════ SUBSCRIBE ════════════ -->
+  <!-- Hidden for now — Beehiiv incident-alert segment not yet set up.
+       Re-enable by uncommenting this section (the JS below no-ops safely
+       while it's absent).
   <section>
     <div class="subscribe">
       <div class="si">
@@ -659,6 +662,7 @@
       </div>
     </div>
   </section>
+  -->
 
 </div>
 
@@ -1163,6 +1167,7 @@ function uptimePct(svc){
   const btn = document.getElementById("subBtn");
   const inp = document.getElementById("subEmail");
   const note = document.getElementById("subNote");
+  if (!btn || !inp || !note) return;   /* section hidden — nothing to wire */
   const ENDPOINT = "/api/status-subscribe";   /* create this as a Pages Function */
 
   function setNote(msg, err){
