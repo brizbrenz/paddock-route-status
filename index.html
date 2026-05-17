@@ -277,8 +277,9 @@
   .svc {
     display: flex; align-items: center; gap: 18px;
     padding: 13px 24px;
-    border-bottom: 1px solid #F4EFE2;
   }
+  /* Row divider lives on the .uptime block below the bars — not on .svc,
+     where the negative top-margin would drag the line up through the bars. */
   .svc:last-child { border-bottom: none; }
   .svc .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
   .svc .meta { flex: 1; min-width: 0; }
@@ -517,6 +518,7 @@
   html[data-theme="dark"] .tl-body { color: #B7C0A6; }
   html[data-theme="dark"] .foot-col a,
   html[data-theme="dark"] .foot-col span { color: #A9B097; }
+  html[data-theme="dark"] .uptime { border-bottom-color: #2A3A22; }
 </style>
 </head>
 <body>
@@ -742,15 +744,17 @@
    service state — you never set it by hand. "prelaunch" services are shown
    but never count as a problem (they're roadmap, not downtime).
 
-   LIVE PING: the website service is also probed in-browser by loading the
-   favicon from paddockroute.com.au. If that fails the banner softens to a
-   "checking" note — but the manual STATUS values stay the source of truth.
+   LIVE REACHABILITY: any service with a `probe: "<url>"` is checked in the
+   browser with a no-cors fetch to that origin's root. It confirms the origin
+   answered at all (it does NOT depend on /favicon.ico, which these sites
+   don't serve — they use inline data-URI favicons). Manual STATUS values
+   stay the source of truth; a failed probe only softens the banner.
    ═══════════════════════════════════════════════════════════════════════ */
 
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-17T08:30:00+10:00",
+  lastUpdated: "2026-05-17T13:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -763,7 +767,7 @@ const STATUS = {
           tag: "paddockroute.com.au",
           desc: "Public site, waitlist, content pages.",
           state: "operational",
-          livePing: true            /* in-browser reachability probe */
+          probe: "https://paddockroute.com.au/"   /* in-browser reachability */
         },
         {
           name: "Waitlist & sign-ups",
@@ -814,6 +818,13 @@ const STATUS = {
           tag: "Beehiiv",
           desc: "Transactional email, alerts and subscriber sync.",
           state: "operational"
+        },
+        {
+          name: "Service status site",
+          tag: "paddockroute.online",
+          desc: "This status page and live reachability monitoring.",
+          state: "operational",
+          probe: "https://paddockroute.online/"   /* in-browser reachability */
         },
         {
           name: "Payments",
@@ -1098,33 +1109,48 @@ function uptimePct(svc){
     </div>`).join("");
 })();
 
-/* ── Live website reachability probe (no CORS issue: image load) ── */
-(function livePing(){
-  const target = STATUS.groups
+/* ── Live reachability probe ──
+   For every service that carries a `probe:` URL, do a no-cors fetch to that
+   origin's root. The promise RESOLVES (opaque response) if the server
+   answered at all — any HTTP status — and only REJECTS on a genuine network
+   failure: DNS failure, refused connection, TLS error, or our timeout. It
+   does NOT request /favicon.ico (these single-file sites serve an inline
+   data-URI favicon, so that path 404s and would falsely read as "down").
+   Manual STATUS stays the source of truth; a failed probe on an otherwise
+   "operational" service only softens the banner with a non-alarming note. */
+(function liveProbe(){
+  const targets = STATUS.groups
     .flatMap(g => g.services)
-    .find(s => s.livePing);
-  if (!target) return;
+    .filter(s => s.probe && s.state === "operational");
+  if (!targets.length) return;
 
-  const img = new Image();
-  let done = false;
-  const timer = setTimeout(() => { if (!done){ done = true; img.src = ""; } }, 6000);
+  const PROBE_TIMEOUT = 6000;
 
-  img.onload = () => {
-    if (done) return; done = true; clearTimeout(timer);
-    /* reachable — manual STATUS stays source of truth, this just confirms */
-  };
-  img.onerror = () => {
-    if (done) return; done = true; clearTimeout(timer);
-    /* If the manual state says operational but we can't reach it, soften
-       the banner with a non-alarming note rather than declaring an outage. */
-    if (target.state === "operational"){
+  function probeOne(url){
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT);
+    const bust = (url.includes("?") ? "&" : "?") + "_=" + Date.now();
+    return fetch(url + bust, {
+      mode: "no-cors",
+      cache: "no-store",
+      redirect: "follow",
+      signal: ctrl.signal
+    }).then(() => true)
+      .catch(() => false)
+      .finally(() => clearTimeout(to));
+  }
+
+  Promise.all(targets.map(t => probeOne(t.probe).then(ok => ok)))
+    .then(results => {
+      const allReachable = results.every(Boolean);
+      if (allReachable) return;   /* reachable — nothing to surface */
       const sub = document.getElementById("overallSub");
-      sub.innerHTML = sub.innerHTML +
-        ' <span style="color:var(--straw)">· Live reachability check inconclusive — verifying.</span>';
-    }
-  };
-  /* cache-bust so we test the live origin each load */
-  img.src = "https://paddockroute.com.au/favicon.ico?_=" + Date.now();
+      if (sub && !sub.dataset.probeNote){
+        sub.dataset.probeNote = "1";
+        sub.innerHTML += ' <span style="color:var(--straw)">' +
+          '· Live reachability check inconclusive — verifying.</span>';
+      }
+    });
 })();
 
 /* ── Subscribe form ──
