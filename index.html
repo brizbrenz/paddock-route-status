@@ -758,7 +758,7 @@
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-17T13:30:00+10:00",
+  lastUpdated: "2026-05-18T18:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -851,6 +851,13 @@ const STATUS = {
   /* Incident + status history (newest first).
      type: "resolved" | "scheduled" | "milestone" | "investigating" */
   incidents: [
+    {
+      type: "resolved",
+      date: "18 May 2026",
+      title: "Website outage — paddockroute.com.au",
+      pill: "Resolved",
+      body: "A site update deployment triggered an HTTP 502 error on Cloudflare's own asset upload API, leaving a corrupted version of the site file cached in Cloudflare's CDN. Subsequent redeployments reused the corrupted cached asset, extending the outage. The issue was resolved by deploying a cache-busting build that forced a fresh asset upload and cleared the corrupted entry. Total downtime approximately 33 minutes (17:57–18:30 AEST). No subscriber data, form submissions, or waitlist records were affected."
+    },
     {
       type: "milestone",
       date: "17 May 2026",
