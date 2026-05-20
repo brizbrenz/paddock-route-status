@@ -758,7 +758,7 @@
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-18T18:30:00+10:00",
+  lastUpdated: "2026-05-20T17:15:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -851,6 +851,13 @@ const STATUS = {
   /* Incident + status history (newest first).
      type: "resolved" | "scheduled" | "milestone" | "investigating" */
   incidents: [
+    {
+      type: "milestone",
+      date: "20 May 2026",
+      title: "Core API development underway",
+      pill: "Milestone",
+      body: "Build work has started on the core API — the backbone for orders, accounts and platform services. The service remains marked &lsquo;In development&rsquo; on this page until it&rsquo;s deployed and externally reachable. A follow-up milestone will flip it to operational once that&rsquo;s in place."
+    },
     {
       type: "resolved",
       date: "18 May 2026",
