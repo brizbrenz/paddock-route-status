@@ -293,6 +293,12 @@
     border: 1px solid #E3DAC4; border-radius: 5px; padding: 2px 6px; font-weight: 400;
   }
   .svc .desc { font-size: 12.5px; color: var(--stone); margin-top: 2px; }
+  .svc .live-breakdown {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.04em;
+    margin-top: 5px; color: var(--field);
+  }
+  .svc .live-breakdown[hidden] { display: none; }
   .svc .state {
     font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
     white-space: nowrap; text-align: right;
@@ -812,7 +818,8 @@ const STATUS = {
           tag: "v1",
           desc: "Orders, accounts and platform services.",
           state: "operational",
-          probe: "https://api.paddockroute.com.au/health/ready"   /* postgres + redis readiness */
+          probe: "https://api.paddockroute.com.au/health/ready",   /* postgres + redis readiness */
+          probeType: "health"                                       /* cors JSON probe, surfaces real check state */
         },
         {
           name: "Database",
@@ -945,21 +952,40 @@ function uptimePct(svc){
   return (good / days.length * 100);
 }
 
+/* ── Live overlay state ──
+   Populated by the health probe. Renderers check effectiveState() which
+   returns the live state if present, falling back to the static STATUS
+   value. Keeps STATUS as the source of truth for the schema while letting
+   live data drive what's actually displayed. */
+const LIVE = {};   /* serviceName -> { state, breakdown, breakdownColor } */
+
+function effectiveState(svc){
+  const o = LIVE[svc.name];
+  return (o && o.state) ? o.state : svc.state;
+}
+
 /* ── Render service groups ── */
-(function renderGroups(){
+function renderGroups({ animate = true } = {}){
   const root = document.getElementById("groups");
+  root.innerHTML = "";
   let liveCount = 0, preCount = 0;
 
   STATUS.groups.forEach((g, gi) => {
     const card = document.createElement("div");
     card.className = "group";
-    card.style.animationDelay = (0.1 + gi * 0.08) + "s";
+    card.dataset.group = g.name;
+    if (animate){
+      card.style.animationDelay = (0.1 + gi * 0.08) + "s";
+    } else {
+      card.style.opacity = "1";
+      card.style.transform = "none";
+    }
 
-    /* group rollup badge */
+    /* group rollup badge — reads effective (live-aware) state */
     let worst = -1;
-    g.services.forEach(s => { worst = Math.max(worst, STATE_META[s.state].rank); });
+    g.services.forEach(s => { worst = Math.max(worst, STATE_META[effectiveState(s)].rank); });
     let badgeTxt, badgeBg, badgeCol;
-    if (worst <= 0 && g.services.some(s => STATE_META[s.state].live)) {
+    if (worst <= 0 && g.services.some(s => STATE_META[effectiveState(s)].live)) {
       badgeTxt = "Operational"; badgeBg = "rgba(141,189,90,0.16)"; badgeCol = "var(--s-op-tx)";
     } else if (worst < 0) {
       badgeTxt = "In development"; badgeBg = "rgba(122,116,104,0.14)"; badgeCol = "var(--s-pre-tx)";
@@ -975,23 +1001,29 @@ function uptimePct(svc){
     </div>`;
 
     g.services.forEach(s => {
-      const m = STATE_META[s.state];
+      const eff = effectiveState(s);
+      const m = STATE_META[eff];
       if (m.live) liveCount++; else preCount++;
       const pct = uptimePct(s);
-      html += `<div class="svc">
+      const live = LIVE[s.name] || {};
+      const bd = live.breakdown || "";
+      const bdColor = live.breakdownColor || "var(--field)";
+      html += `<div class="svc" data-service="${s.name}">
         <span class="dot" style="background:${m.color}"></span>
         <div class="meta">
           <div class="name">${s.name}${s.tag ? `<span class="tagchip">${s.tag}</span>` : ""}</div>
           <div class="desc">${s.desc || ""}</div>
+          <div class="live-breakdown" style="color:${bdColor}"${bd ? "" : " hidden"}>${bd}</div>
         </div>
         <div class="state" style="color:${m.tx}">
-          ${m.label}
+          <span class="state-label">${m.label}</span>
           ${pct !== null ? `<span class="pct">${pct.toFixed(2)}% · 90d</span>` : `<span class="pct">not yet live</span>`}
         </div>
       </div>`;
 
-      /* uptime strip */
+      /* uptime strip — today's bar reflects effective state */
       const days = uptimeDays(s);
+      if (STATE_META[eff].live) days[days.length-1].st = eff;
       const bars = days.map(d =>
         `<span class="b" style="background:${dayColor(d.st)}" data-tip="${d.ds} — ${d.st==='pre'?'Not yet monitored':STATE_META[d.st].label}"></span>`
       ).join("");
@@ -1007,13 +1039,14 @@ function uptimePct(svc){
 
   document.getElementById("grpNote").textContent =
     `${liveCount} live · ${preCount} in development`;
-})();
+}
+renderGroups();   /* initial animated render */
 
-/* ── Overall banner (derived from worst LIVE state) ── */
-(function renderBanner(){
+/* ── Overall banner (derived from worst LIVE effective state) ── */
+function renderBanner(){
   let worst = 0, anyLive = false;
   STATUS.groups.forEach(g => g.services.forEach(s => {
-    const m = STATE_META[s.state];
+    const m = STATE_META[effectiveState(s)];
     if (m.live){ anyLive = true; worst = Math.max(worst, m.rank); }
   }));
 
@@ -1048,6 +1081,7 @@ function uptimePct(svc){
   beacon.style.color = col;
   title.textContent = t;
   sub.innerHTML = s;
+  delete sub.dataset.probeNote;   /* fresh render clears any prior note */
 
   /* overall uptime = mean of live services */
   const pcts = [];
@@ -1057,7 +1091,8 @@ function uptimePct(svc){
   const mean = pcts.length ? (pcts.reduce((a,b)=>a+b,0)/pcts.length) : null;
   document.getElementById("uptimeVal").innerHTML =
     mean !== null ? `${mean.toFixed(2)}<small> %</small>` : `—`;
-})();
+}
+renderBanner();   /* initial render */
 
 /* ── Timestamps & live clock ── */
 (function clocks(){
@@ -1129,48 +1164,159 @@ function uptimePct(svc){
     </div>`).join("");
 })();
 
-/* ── Live reachability probe ──
-   For every service that carries a `probe:` URL, do a no-cors fetch to that
-   origin's root. The promise RESOLVES (opaque response) if the server
-   answered at all — any HTTP status — and only REJECTS on a genuine network
-   failure: DNS failure, refused connection, TLS error, or our timeout. It
-   does NOT request /favicon.ico (these single-file sites serve an inline
-   data-URI favicon, so that path 404s and would falsely read as "down").
-   Manual STATUS stays the source of truth; a failed probe on an otherwise
-   "operational" service only softens the banner with a non-alarming note. */
+/* ── Live reachability + health probe ──
+   Two probe shapes:
+
+   1. Default (no probeType): opaque no-cors fetch — confirms the origin
+      answered at all. Used for the website and this status site. Manual
+      STATUS stays the source of truth; a failed probe only softens the
+      banner with a non-alarming note.
+
+   2. probeType: "health" — cors fetch, parses JSON, surfaces real check
+      states (postgres/redis up/down + latency). Writes into the LIVE
+      overlay which the renderers read, overriding the manual state when
+      live data disagrees.
+
+   All probes run on load, then re-run every POLL_INTERVAL_MS. Re-renders
+   only fire when something material changed (state shift or reachability
+   transition), so the page doesn't blink every minute. */
 (function liveProbe(){
   const targets = STATUS.groups
     .flatMap(g => g.services)
     .filter(s => s.probe && s.state === "operational");
   if (!targets.length) return;
 
-  const PROBE_TIMEOUT = 6000;
+  const PROBE_TIMEOUT_MS = 6000;
+  const POLL_INTERVAL_MS = 60000;
 
-  function probeOne(url){
+  async function reachabilityProbe(url){
     const ctrl = new AbortController();
-    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT);
+    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
     const bust = (url.includes("?") ? "&" : "?") + "_=" + Date.now();
-    return fetch(url + bust, {
-      mode: "no-cors",
-      cache: "no-store",
-      redirect: "follow",
-      signal: ctrl.signal
-    }).then(() => true)
-      .catch(() => false)
-      .finally(() => clearTimeout(to));
+    try {
+      await fetch(url + bust, {
+        mode: "no-cors",
+        cache: "no-store",
+        redirect: "follow",
+        signal: ctrl.signal
+      });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: (e && e.name) || "network" };
+    } finally {
+      clearTimeout(to);
+    }
   }
 
-  Promise.all(targets.map(t => probeOne(t.probe).then(ok => ok)))
-    .then(results => {
-      const allReachable = results.every(Boolean);
-      if (allReachable) return;   /* reachable — nothing to surface */
-      const sub = document.getElementById("overallSub");
-      if (sub && !sub.dataset.probeNote){
-        sub.dataset.probeNote = "1";
-        sub.innerHTML += ' <span style="color:var(--straw)">' +
-          '· Live reachability check inconclusive — verifying.</span>';
+  async function healthProbe(url){
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
+    try {
+      const r = await fetch(url, {
+        mode: "cors",
+        cache: "no-store",
+        credentials: "omit",
+        signal: ctrl.signal
+      });
+      if (!r.ok) return { ok: false, reason: "http_" + r.status };
+      const data = await r.json();
+      return { ok: true, data };
+    } catch (e) {
+      return { ok: false, reason: (e && e.name) || "network" };
+    } finally {
+      clearTimeout(to);
+    }
+  }
+
+  /* Translate a health-probe result into state + breakdown text. */
+  function deriveHealth(result){
+    if (!result.ok){
+      return {
+        state: "partial",
+        breakdown: "API unreachable · " + result.reason,
+        breakdownColor: "var(--s-part-tx)"
+      };
+    }
+    const d = result.data || {};
+    const checks = d.checks || {};
+    const entries = Object.entries(checks);
+    const down = entries.filter(([k,v]) => !v || v.status !== "up");
+    const ok = d.status === "ready" && down.length === 0;
+    const breakdown = entries.length
+      ? entries.map(([k, v]) => {
+          if (v && v.status === "up" && typeof v.latencyMs === "number"){
+            return `${k} ${v.latencyMs}ms`;
+          }
+          return `${k} ${v ? v.status : "unknown"}`;
+        }).join(" · ")
+      : "ready";
+    return {
+      state: ok ? "operational" : "degraded",
+      breakdown,
+      breakdownColor: ok ? "var(--field)" : "var(--s-deg-tx)"
+    };
+  }
+
+  /* Update just the breakdown text on a row, no full re-render. */
+  function patchBreakdown(serviceName, text, color){
+    const el = document.querySelector(
+      `.svc[data-service="${CSS.escape(serviceName)}"] .live-breakdown`
+    );
+    if (!el) return;
+    if (text){
+      el.textContent = text;
+      el.style.color = color;
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+    }
+  }
+
+  /* Append the soft "inconclusive" note to the banner for a failed
+     reachability probe. Only adds once per render. */
+  function softenBanner(){
+    const sub = document.getElementById("overallSub");
+    if (!sub || sub.dataset.probeNote) return;
+    sub.dataset.probeNote = "1";
+    sub.innerHTML += ' <span style="color:var(--straw)">' +
+      '· Live reachability check inconclusive — verifying.</span>';
+  }
+
+  /* Signature captures effective state of every service + reachability
+     summary. Re-render only when it changes. */
+  function snapshot(reachFailed){
+    return STATUS.groups
+      .flatMap(g => g.services.map(s => `${s.name}:${effectiveState(s)}`))
+      .join("|") + "|reach:" + (reachFailed ? "1" : "0");
+  }
+  let lastSnapshot = snapshot(false);
+
+  async function runProbes(){
+    let reachFailed = false;
+
+    await Promise.all(targets.map(async (svc) => {
+      if (svc.probeType === "health"){
+        const result = await healthProbe(svc.probe);
+        const derived = deriveHealth(result);
+        LIVE[svc.name] = derived;
+        patchBreakdown(svc.name, derived.breakdown, derived.breakdownColor);
+      } else {
+        const result = await reachabilityProbe(svc.probe);
+        if (!result.ok) reachFailed = true;
       }
-    });
+    }));
+
+    const next = snapshot(reachFailed);
+    if (next !== lastSnapshot){
+      renderGroups({ animate: false });
+      renderBanner();
+      if (reachFailed) softenBanner();
+      lastSnapshot = next;
+    }
+  }
+
+  runProbes();                                  /* fire immediately on load */
+  setInterval(runProbes, POLL_INTERVAL_MS);     /* then every 60s */
 })();
 
 /* ── Subscribe form ──
