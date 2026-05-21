@@ -758,7 +758,7 @@
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-20T17:15:00+10:00",
+  lastUpdated: "2026-05-21T18:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -809,8 +809,10 @@ const STATUS = {
       services: [
         {
           name: "Core API",
+          tag: "v1",
           desc: "Orders, accounts and platform services.",
-          state: "prelaunch"
+          state: "operational",
+          probe: "https://api.paddockroute.com.au/health/ready"   /* postgres + redis readiness */
         },
         {
           name: "Database",
@@ -853,10 +855,10 @@ const STATUS = {
   incidents: [
     {
       type: "milestone",
-      date: "20 May 2026",
-      title: "Core API development underway",
+      date: "21 May 2026",
+      title: "Core API online",
       pill: "Milestone",
-      body: "Build work has started on the core API — the backbone for orders, accounts and platform services. The service remains marked &lsquo;In development&rsquo; on this page until it&rsquo;s deployed and externally reachable. A follow-up milestone will flip it to operational once that&rsquo;s in place."
+      body: "The Paddock Route core backend API is now deployed and serving. This is the platform layer that the customer ordering app, driver app and route dispatch will plug into as each is brought online. No customer-facing changes yet — the API is running ahead of the apps that consume it."
     },
     {
       type: "resolved",
