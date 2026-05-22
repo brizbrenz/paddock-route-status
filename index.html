@@ -764,7 +764,7 @@
 const STATUS = {
 
   /* ISO 8601. +10:00 is AEST (Queensland, no daylight saving). */
-  lastUpdated: "2026-05-21T18:30:00+10:00",
+  lastUpdated: "2026-05-23T15:30:00+10:00",
 
   /* Service groups, in display order. */
   groups: [
@@ -828,9 +828,8 @@ const STATUS = {
         },
         {
           name: "Email & notifications",
-          tag: "Beehiiv",
           desc: "Transactional email, alerts and subscriber sync.",
-          state: "operational"
+          state: "prelaunch"
         },
         {
           name: "Service status site",
@@ -860,6 +859,13 @@ const STATUS = {
   /* Incident + status history (newest first).
      type: "resolved" | "scheduled" | "milestone" | "investigating" */
   incidents: [
+    {
+      type: "milestone",
+      date: "23 May 2026",
+      title: "Beehiiv decommissioned",
+      pill: "Milestone",
+      body: "The third-party Beehiiv subscription service has been decommissioned. With the Core API now serving as the platform layer, subscriber and notification flows will be rebuilt on first-party infrastructure. The Email & notifications service has moved back to In development while the new transactional pipeline is built. Public site, waitlist sign-ups and this status page were unaffected during the cutover."
+    },
     {
       type: "milestone",
       date: "21 May 2026",
